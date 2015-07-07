@@ -6,7 +6,7 @@ import jieba.posseg as pseg
 import jieba.analyse
 import math
 
-data_path = '../../../../data/'
+data_path = '../../../data/'
 
 def getStopword():
 	stop_word_addr = data_path+'stopword.txt'

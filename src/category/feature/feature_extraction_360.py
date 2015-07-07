@@ -4,7 +4,7 @@ import pickle
 import jieba,jieba.posseg,jieba.analyse
 
 
-data_path = '../../../../data/'
+data_path = '../../../data/'
 
 def isChinese(var):
 	for v in var:
