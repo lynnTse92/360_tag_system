@@ -73,13 +73,16 @@ def extractFeatureFromWikiCategory(category_id,relevant_category_list,category_f
 			if len(set(seg_word_list) & category_set) >= 1:
 				level += 1
 
+		# if row_index == 1000:
+		# 	break
+
 	print 'writing'
 	for category in category_feature_dict.keys():
 		is_in_wiki = category_feature_dict[category][0]
 		is_relevant = category_feature_dict[category][1]
 		average_level_in_wiki = 0
 		if len(category_feature_dict[category][2]) != 0:
-			average_level_in_wiki = 1.0*sum(category_feature_dict[category][2])/(10*len(category_feature_dict[category][1]))
+			average_level_in_wiki = 1.0*sum(category_feature_dict[category][2])/(10*len(category_feature_dict[category][2]))
 		cover_num = 1.0*len(category_feature_dict[category][3])/max_cover_num
 		outfile.write(category+','+str(is_in_wiki)+','+str(is_relevant)+','+str(average_level_in_wiki)+','+str(cover_num)+'\r\n')
 
