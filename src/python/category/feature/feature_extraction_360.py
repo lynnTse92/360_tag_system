@@ -3,6 +3,9 @@ import sys
 import pickle
 import jieba,jieba.posseg,jieba.analyse
 
+
+data_path = '../../../../data/'
+
 def isChinese(var):
 	for v in var:
 		if not(0x4e00<=ord(v)<0x9fa6):
@@ -10,7 +13,7 @@ def isChinese(var):
 	return True
 
 def getStopword():
-	infile = '../../data/stopword.txt'
+	infile = data_path+'stopword.txt'
 	stopword_set = set()
 	infile = open(infile, 'rb')
 	for line in infile:
@@ -21,7 +24,7 @@ def getStopword():
 def readCategory(category_id):
 	print 'reading category'
 	category_set = set([])
-	infile = open('../../data/candidate_concept_title_'+str(category_id)+'.txt','rb')
+	infile = open(data_path+'candidate_concept_title_'+str(category_id)+'.txt','rb')
 	for row in infile:
 		items = row.strip().split(',')
 		word = items[0].decode('utf-8')
@@ -53,8 +56,8 @@ def tag(app_id,app_tag_dict,tf_dict):
 	return tf_dict
 
 def tf(category_id,category_set,app_category_dict,app_tag_dict):
-	infile = open('../../data/all_cn_seg_nwi_clean.txt','rb')
-	outfile = open('feature/tag_tf_'+str(category_id)+'.csv','wb')
+	infile = open(data_path+'all_cn_seg_nwi_clean.txt','rb')
+	outfile = open('title_tf_'+str(category_id)+'.csv','wb')
 	tf_dict = {}
 	for category in category_set:
 		tf_dict.setdefault(category,0)
@@ -72,9 +75,9 @@ def tf(category_id,category_set,app_category_dict,app_tag_dict):
 		if app_category_dict[app_id][1] != category_id:
 			continue
 
-		# title(app_name,tf_dict)
+		title(app_name,tf_dict)
 		# brief(seg_brief_list,tf_dict)
-		tag(app_id,app_tag_dict,tf_dict)
+		# tag(app_id,app_tag_dict,tf_dict)
 
 	max_tf = max(tf_dict.values())
 	print 'sorting'
@@ -86,13 +89,23 @@ def main(category_id):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
-	print 'loading file'
-	jieba.load_userdict("../../data/jieba_userdict.txt")
-	app_tag_dict = pickle.load(open('../../data/app_tag.dict','rb'))
-	app_category_dict = pickle.load(open('../../data/app_category.dict','rb'))
+	print 'loading preparation file'
+	jieba.load_userdict(data_path+"jieba_userdict.txt")
+	app_tag_dict = pickle.load(open(data_path+'app_tag.dict','rb'))
+	app_category_dict = pickle.load(open(data_path+'app_category.dict','rb'))
 
 	category_set = readCategory(category_id)
 	tf(category_id,category_set,app_category_dict,app_tag_dict)
 
 if __name__ == '__main__':
 	main(15)
+
+
+
+
+
+
+
+
+
+	

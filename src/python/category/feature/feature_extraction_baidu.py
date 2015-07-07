@@ -6,8 +6,10 @@ import jieba.posseg as pseg
 import jieba.analyse
 import math
 
+data_path = '../../../../data/'
+
 def getStopword():
-	stop_word_addr = '../../data/stopword.txt'
+	stop_word_addr = data_path+'stopword.txt'
 	stop_word_set = set()
 	fi = open(stop_word_addr, 'rb')
 	for line in fi:
