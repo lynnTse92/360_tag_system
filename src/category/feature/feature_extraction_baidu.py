@@ -65,7 +65,7 @@ def extractFeature(category_id,toClearAmbiguity,main_category_keywords,relevant_
 		else:
 			sub_category_score_dict[sub_category] = 0
 
-	outfile = open('feature/category_feature_baidu_'+str(category_id)+'.csv','wb')
+	outfile = open('category_feature_baidu_'+str(category_id)+'.csv','wb')
 	
 	max_score = max(sub_category_score_dict.values())
 	sorted_list = sorted(sub_category_score_dict.items(),key=lambda p:p[1],reverse=True)
@@ -98,7 +98,7 @@ def main(category_id):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
-	file_path_list = readDir('../../data/category_feature/'+str(category_id)+'/clean/')
+	file_path_list = readDir(data_path+'feature/category/'+str(category_id)+'/clean/')
 	category_info_dict = readCategoryInfo(file_path_list)
 	
 	toClearAmbiguity = False

@@ -18,7 +18,7 @@ class CategorySpider(scrapy.spider.Spider):
 
 	def start_requests(self):
 		win32file._setmaxstdio(2048)
-		infile = open('candidate_concept_54.txt','rb')
+		infile = open('candidate_category_54.txt','rb')
 		requests = []
 		for row in infile:
 			category = row.split(',')[0].decode('utf-8')

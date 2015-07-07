@@ -9,7 +9,7 @@ outfile = open('../category_path_clean.txt','wb')
 row_index = 0
 for row in infile:
 	row_index += 1
-	print row_index
+	# print row_index
 	fanti_items = row.strip().split(',')
 	jianti_items = []
 	try:
@@ -21,3 +21,5 @@ for row in infile:
 		outfile.write(','.join(jianti_items)+'\r\n')
 	except:
 		print 'ohh'
+
+print 'finsihed'

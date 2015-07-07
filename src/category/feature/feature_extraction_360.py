@@ -3,7 +3,6 @@ import sys
 import pickle
 import jieba,jieba.posseg,jieba.analyse
 
-
 data_path = '../../../data/'
 
 def isChinese(var):
@@ -24,7 +23,7 @@ def getStopword():
 def readCategory(category_id):
 	print 'reading category'
 	category_set = set([])
-	infile = open(data_path+'candidate_concept_title_'+str(category_id)+'.txt','rb')
+	infile = open(data_path+'candidate_category_'+str(category_id)+'.txt','rb')
 	for row in infile:
 		items = row.strip().split(',')
 		word = items[0].decode('utf-8')
@@ -50,12 +49,15 @@ def brief(seg_brief_list,tf_dict):
 
 def tag(app_id,app_tag_dict,tf_dict):
 	stopword_set = getStopword()
-	for word in app_tag_dict[app_id]:
-		if word in tf_dict.keys():
-			tf_dict[word] += 1
+	for tag in app_tag_dict[app_id]:
+		seg_word_list = jieba.cut(tag)
+		for word in seg_word_list:
+			if word in tf_dict.keys():
+				tf_dict[word] += 1
 	return tf_dict
 
 def tf(category_id,category_set,app_category_dict,app_tag_dict):
+	print 'extracting feature'
 	infile = open(data_path+'all_cn_seg_nwi_clean.txt','rb')
 	outfile = open('title_tf_'+str(category_id)+'.csv','wb')
 	tf_dict = {}
@@ -64,7 +66,7 @@ def tf(category_id,category_set,app_category_dict,app_tag_dict):
 	row_index = 0
 	for row in infile:
 		row_index += 1
-		print row_index
+		# print row_index
 		items = row.strip().split("<@>")
 		try:
 			app_id = int(items[0])

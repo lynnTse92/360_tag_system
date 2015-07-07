@@ -3,6 +3,8 @@ import sys
 import pickle
 import jieba,jieba.posseg,jieba.analyse
 
+data_path = '../../../data/'
+
 def isChinese(var):
 	for v in var:
 		if not(0x4e00<=ord(v)<0x9fa6):
@@ -20,7 +22,7 @@ def isSubset(shorter_text,longer_text):
 	return is_subset
 
 def getStopword():
-	infile = '../../data/stopword.txt'
+	infile = data_path+'stopword.txt'
 	stopword_set = set()
 	infile = open(infile, 'rb')
 	for line in infile:
@@ -31,7 +33,7 @@ def getStopword():
 def readCandidateCategory(category_id):
 	print 'reading candidate category'
 	category_feature_dict = {}
-	infile = open('../../data/candidate_concept_title_'+str(category_id)+'.txt','rb')
+	infile = open(data_path+'candidate_concept_title_'+str(category_id)+'.txt','rb')
 	for row in infile:
 		items = row.strip().split(',')
 		word = items[0].decode('utf-8')
@@ -39,9 +41,9 @@ def readCandidateCategory(category_id):
 		category_feature_dict.setdefault(word,0)
 	return category_feature_dict
 
-def inclusionRelation(category_feature_dict):
+def inclusionRelation(category_feature_dict,category_id):
 	print 'extracting inclusion relation feature'
-	outfile = open('feature/inclusion_54.csv','wb')
+	outfile = open('inclusion_'+str(category_id)+'.csv','wb')
 	for i in range(len(category_feature_dict.keys())):
 		word_i = category_feature_dict.keys()[i]
 		for j in range(len(category_feature_dict.keys())):
@@ -68,7 +70,7 @@ def main(category_id):
 	sys.setdefaultencoding('utf-8')
 
 	category_feature_dict = readCandidateCategory(category_id)
-	inclusionRelation(category_feature_dict)
+	inclusionRelation(category_feature_dict,category_id)
 
 if __name__ == '__main__':
 	main(54)
