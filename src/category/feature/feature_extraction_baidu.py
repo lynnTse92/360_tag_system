@@ -32,7 +32,8 @@ def readCategoryInfo(file_path_list):
 		file_index += 1
 		print file_index
 		category = file_path.split('/')[-1]
-		category = unicode(category,'gbk').decode('utf-8')
+		category = category.decode('utf-8')
+		# category = unicode(category,'gbk').decode('utf-8')
 		category_info_dict.setdefault(category,{})
 		infile = open(file_path,'rb')
 		for row in infile:
@@ -93,7 +94,6 @@ def getMainCategoryKeywords(relevant_category_list,category_info_dict):
 					main_category_keywords.append(category)
 	return main_category_keywords
 
-
 def main(category_id):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
@@ -103,7 +103,9 @@ def main(category_id):
 	
 	toClearAmbiguity = False
 	# relevant_category_list = [u'棋',u'牌']
-	relevant_category_list = [u'阅读',u'新闻']
+	# relevant_category_list = [u'阅读',u'新闻']
+	relevant_category_list = [u'教育',u'学习']
+
 	for relevant_category in relevant_category_list:
 		if len(relevant_category) <= 1:
 			toClearAmbiguity = True
@@ -113,4 +115,5 @@ def main(category_id):
 	extractFeature(category_id,toClearAmbiguity,main_category_keywords,relevant_category_list,sub_category_list,category_info_dict,)
 
 if __name__ == '__main__':
-	main(15)
+	main(102232)
+

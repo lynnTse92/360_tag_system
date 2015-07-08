@@ -59,7 +59,7 @@ def tag(app_id,app_tag_dict,tf_dict):
 def tf(category_id,category_set,app_category_dict,app_tag_dict):
 	print 'extracting feature'
 	infile = open(data_path+'all_cn_seg_nwi_clean.txt','rb')
-	outfile = open('title_tf_'+str(category_id)+'.csv','wb')
+	outfile = open('tag_tf_'+str(category_id)+'.csv','wb')
 	tf_dict = {}
 	for category in category_set:
 		tf_dict.setdefault(category,0)
@@ -77,9 +77,9 @@ def tf(category_id,category_set,app_category_dict,app_tag_dict):
 		if app_category_dict[app_id][1] != category_id:
 			continue
 
-		title(app_name,tf_dict)
+		# title(app_name,tf_dict)
 		# brief(seg_brief_list,tf_dict)
-		# tag(app_id,app_tag_dict,tf_dict)
+		tag(app_id,app_tag_dict,tf_dict)
 
 	max_tf = max(tf_dict.values())
 	print 'sorting'
@@ -100,7 +100,7 @@ def main(category_id):
 	tf(category_id,category_set,app_category_dict,app_tag_dict)
 
 if __name__ == '__main__':
-	main(15)
+	main(102232)
 
 
 

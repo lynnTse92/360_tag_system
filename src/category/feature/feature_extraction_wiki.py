@@ -49,31 +49,53 @@ def extractFeatureFromWikiCategory(category_id,relevant_category_list,category_f
 					isRelevant = True
 					break
 
-			seg_word_list = jieba.cut(word)
-			for seg_word in seg_word_list:
-				if seg_word in category_set and seg_word not in handled_word_set:
-					category_feature_dict[seg_word][0] = 1
-					if isRelevant:
-						category_feature_dict[seg_word][1] = 1
-					category_feature_dict[seg_word][2].append(level)
-					handled_word_set.add(seg_word)
+			# seg_word_list = jieba.cut(word)
+			# for seg_word in seg_word_list:
+			# 	if seg_word in category_set and seg_word not in handled_word_set:
+			# 		category_feature_dict[seg_word][0] = 1
+			# 		if isRelevant:
+			# 			category_feature_dict[seg_word][1] = 1
+			# 		category_feature_dict[seg_word][2].append(level)
+			# 		handled_word_set.add(seg_word)
 
-					other_words_set = set([])
-					if i+1 != len(words):
-						for other_word in words[i+1]:
-							other_seg_word_list = jieba.cut(other_word)
-							for other_seg_word in other_seg_word_list:
-								other_words_set.add(other_seg_word)
+			# 		other_words_set = set([])
+			# 		if i+1 != len(words):
+			# 			for other_word in words[i+1]:
+			# 				other_seg_word_list = jieba.cut(other_word)
+			# 				for other_seg_word in other_seg_word_list:
+			# 					other_words_set.add(other_seg_word)
 
-					cover_set = other_words_set & category_set - handled_word_set
-					category_feature_dict[seg_word][3] = category_feature_dict[seg_word][3] | cover_set 
-					if len(category_feature_dict[seg_word][3]) > max_cover_num:
-						max_cover_num = len(category_feature_dict[seg_word][3])
+			# 		cover_set = other_words_set & category_set - handled_word_set
+			# 		category_feature_dict[seg_word][3] = category_feature_dict[seg_word][3] | cover_set 
+			# 		if len(category_feature_dict[seg_word][3]) > max_cover_num:
+			# 			max_cover_num = len(category_feature_dict[seg_word][3])
 
-			if len(set(seg_word_list) & category_set) >= 1:
+			# if len(set(jieba.cut(word)) & category_set) >= 1:
+			# 	level += 1
+
+
+
+			if word in category_set and word not in handled_word_set:
+				category_feature_dict[word][0] = 1
+				if isRelevant:
+					category_feature_dict[word][1] = 1
+				category_feature_dict[word][2].append(level)
+				handled_word_set.add(word)
+
+				other_words_set = set([])
+				if i+1 != len(words):
+					for other_word in words[i+1]:
+						other_words_set.add(other_word)
+
+				cover_set = other_words_set & category_set - handled_word_set
+				category_feature_dict[word][3] = category_feature_dict[word][3] | cover_set 
+				if len(category_feature_dict[word][3]) > max_cover_num:
+					max_cover_num = len(category_feature_dict[word][3])
+
+			if word in category_set:
 				level += 1
 
-		# if row_index == 1000:
+		# if row_index == 10000:
 		# 	break
 
 	print 'writing'
@@ -87,8 +109,8 @@ def extractFeatureFromWikiCategory(category_id,relevant_category_list,category_f
 		outfile.write(category+','+str(is_in_wiki)+','+str(is_relevant)+','+str(average_level_in_wiki)+','+str(cover_num)+'\r\n')
 
 #1.is_in_wiki
-#2.average_level_in_wiki
-#3.average_relation_level_in_wiki
+#2.is_relevant
+#3.average_level_in_wiki
 #4.cover_num
 
 def main(category_id):
@@ -98,9 +120,11 @@ def main(category_id):
 	jieba.load_userdict(data_path+"jieba_userdict.txt")
 
 	# relevant_category_list = [u'棋',u'牌',u'牌类',u'棋类',u'纸牌']
-	relevant_category_list = [u'阅读',u'新闻',u'读书',u'资讯']
+	# relevant_category_list = [u'阅读',u'新闻',u'读书',u'资讯']
+	relevant_category_list = [u'教育',u'学习']
+
 	category_feature_dict = readCandidateCategory(category_id)
 	extractFeatureFromWikiCategory(category_id,relevant_category_list,category_feature_dict)
 
 if __name__ == '__main__':
-	main(15)
+	main(102232)
