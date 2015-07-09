@@ -75,5 +75,5 @@ def main(category_id):
 	generateCandidateCategory(category_id)
 
 if __name__ == '__main__':
-	main(102232)
+	main(51)
 

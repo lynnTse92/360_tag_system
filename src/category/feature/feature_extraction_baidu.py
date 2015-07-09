@@ -102,9 +102,11 @@ def main(category_id):
 	category_info_dict = readCategoryInfo(file_path_list)
 	
 	toClearAmbiguity = False
-	# relevant_category_list = [u'棋',u'牌']
+	relevant_category_list = [u'棋',u'牌',u'棋牌']
 	# relevant_category_list = [u'阅读',u'新闻']
-	relevant_category_list = [u'教育',u'学习']
+	# relevant_category_list = [u'教育',u'学习']
+	# relevant_category_list = [u'摄影',u'摄像']
+
 
 	for relevant_category in relevant_category_list:
 		if len(relevant_category) <= 1:
@@ -115,5 +117,5 @@ def main(category_id):
 	extractFeature(category_id,toClearAmbiguity,main_category_keywords,relevant_category_list,sub_category_list,category_info_dict,)
 
 if __name__ == '__main__':
-	main(102232)
+	main(54)
 

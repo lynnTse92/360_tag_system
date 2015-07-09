@@ -116,8 +116,9 @@ def main(category_id):
 	sys.setdefaultencoding('utf-8')
 
 	# main_category_list = [u'阅读',u'资讯',u'新闻']
-	# main_category_list = [u'棋',u'牌',u'棋牌']
-	main_category_list = [u'教育',u'学习']
+	main_category_list = [u'棋',u'牌',u'棋牌']
+	# main_category_list = [u'教育',u'学习']
+	# main_category_list = [u'摄影',u'摄像']
 	
 	file_path_list = readDir(data_path+'feature/category/'+str(category_id)+'/clean/')
 	category_info_dict = readCategoryInfo(file_path_list)
@@ -154,4 +155,4 @@ def main(category_id):
 
 
 if __name__ == '__main__':
-	main(102232)
+	main(54)

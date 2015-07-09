@@ -64,7 +64,7 @@ def combine(category_id,category_list,category_wrapper_dict):
 	print 'combing'
 	tag_set = set([])
 	editor_tag_set = getCategoryEditorTag(category_id)
-	outfile = open('combine.txt','wb')
+	outfile = open('combine_'+str(category_id)+'.txt','wb')
 	outfile2 = open('tag_set_'+str(category_id)+'.txt','wb')
 	for i in range(len(category_list)):
 		for j in range(len(category_list)):
@@ -93,4 +93,4 @@ def main(category_id):
 	combine(category_id,category_list,category_wrapper_dict)
 
 if __name__ == '__main__':
-	main(102232)
+	main(54)

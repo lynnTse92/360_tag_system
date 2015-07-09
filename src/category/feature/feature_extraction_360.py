@@ -100,7 +100,7 @@ def main(category_id):
 	tf(category_id,category_set,app_category_dict,app_tag_dict)
 
 if __name__ == '__main__':
-	main(102232)
+	main(54)
 
 
 

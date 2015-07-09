@@ -119,12 +119,13 @@ def main(category_id):
 
 	jieba.load_userdict(data_path+"jieba_userdict.txt")
 
-	# relevant_category_list = [u'棋',u'牌',u'牌类',u'棋类',u'纸牌']
+	relevant_category_list = [u'棋',u'牌',u'牌类',u'棋类',u'纸牌']
 	# relevant_category_list = [u'阅读',u'新闻',u'读书',u'资讯']
-	relevant_category_list = [u'教育',u'学习']
+	# relevant_category_list = [u'教育',u'学习']
+	# relevant_category_list = [u'摄影',u'摄像']
 
 	category_feature_dict = readCandidateCategory(category_id)
 	extractFeatureFromWikiCategory(category_id,relevant_category_list,category_feature_dict)
 
 if __name__ == '__main__':
-	main(102232)
+	main(54)

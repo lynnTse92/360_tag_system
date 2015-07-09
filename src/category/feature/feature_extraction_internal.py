@@ -69,4 +69,4 @@ def main(category_id):
 	inclusionRelation(category_feature_dict,category_id)
 
 if __name__ == '__main__':
-	main(102232)
+	main(54)

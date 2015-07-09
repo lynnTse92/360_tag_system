@@ -56,7 +56,7 @@ def recommend(category_id,category_tag_set):
 
 	print 'reading app'
 	infile = open(data_path+'all_cn_seg_nwi_clean.txt','rb')
-	outfile = open('app_recommend_tag'+str(category_id)+'.txt','wb')
+	outfile = open('app_recommend_tag_'+str(category_id)+'.txt','wb')
 	for row in infile:
 		app_recommend_tag = set([])
 		app_recommend_tag2 = set([])

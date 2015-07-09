@@ -140,17 +140,17 @@ def main(category_id):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
-	category_feature_dict = combineFeature(category_id)
-	X_train,Y = readTrainData(category_feature_dict)
-	X_test,X_test_name = readTestData(category_feature_dict)
-	clf = model(X_train,Y)
-	test(clf,X_test,X_test_name,category_id)
-
 	# category_feature_dict = combineFeature(category_id)
+	# X_train,Y = readTrainData(category_feature_dict)
 	# X_test,X_test_name = readTestData(category_feature_dict)
-	# clf = joblib.load('decision_tree_classifier.model')
+	# clf = model(X_train,Y)
 	# test(clf,X_test,X_test_name,category_id)
+
+	category_feature_dict = combineFeature(category_id)
+	X_test,X_test_name = readTestData(category_feature_dict)
+	clf = joblib.load('decision_tree_classifier.model')
+	test(clf,X_test,X_test_name,category_id)
 
 
 if __name__ == '__main__':
-	main(102232)
+	main(54)
