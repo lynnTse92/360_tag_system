@@ -81,4 +81,6 @@ def main(category_id):
 	combine(category_id,category_list,category_wrapper_dict)
 
 if __name__ == '__main__':
-	main(54)
+	category_id = int(sys.argv[1])
+	main(category_id)
+	
