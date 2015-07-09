@@ -1,56 +1,28 @@
 #encoding=utf-8
 import sys
+sys.path.append("../../common/")
+import os
+import text_process
+import file_utils
+import common
 import pickle
 import jieba,jieba.posseg,jieba.analyse
 
 data_path = '../../../data/'
 
-def isChinese(var):
-	for v in var:
-		if not(0x4e00<=ord(v)<0x9fa6):
-			return False
-	return True
-
-#判断shorter_text是否被longer_text包含
-def isSubset(shorter_text,longer_text):
-	is_subset = False
-	for i in range(len(longer_text)):	
-		if shorter_text == ''.join(longer_text[i:i+len(shorter_text)]):
-			is_subset = True
-		if i+len(shorter_text) == len(longer_text):
-			break
-	return is_subset
-
-def getStopword():
-	infile = data_path+'stopword.txt'
-	stopword_set = set()
-	infile = open(infile, 'rb')
-	for line in infile:
-		stopword_set.add(line.strip().decode('utf-8'))
-	infile.close()
-	return stopword_set
-
-def readCandidateCategory(category_id):
-	print 'reading candidate category'
-	category_feature_dict = {}
-	infile = open(data_path+'candidate_category_'+str(category_id)+'.txt','rb')
-	for row in infile:
-		items = row.strip().split(',')
-		word = items[0].decode('utf-8')
-		fre = int(items[1])
-		category_feature_dict.setdefault(word,0)
-	return category_feature_dict
-
-def inclusionRelation(category_feature_dict,category_id):
+def inclusionRelation(category_id,category_set):
 	print 'extracting inclusion relation feature'
-	outfile = open('inclusion_'+str(category_id)+'.csv','wb')
+	category_feature_dict = {}
+	for category in category_set:
+		category_feature_dict.setdefault(category,0)
+	outfile = open('internal/'+str(category_id)+'.csv','wb')
 	for i in range(len(category_feature_dict.keys())):
 		for j in range(len(category_feature_dict.keys())):
 			if i != j:
 				word_i = category_feature_dict.keys()[i]
 				word_j = category_feature_dict.keys()[j]
 				if len(word_i) < len(word_j):
-					if isSubset(word_i,word_j) and len(word_i)!=1:
+					if text_process.isSubset(word_i,word_j) and len(word_i)!=1:
 						category_feature_dict[word_i] += 1
 
 	inclusion_max = max(category_feature_dict.values())
@@ -65,8 +37,10 @@ def main(category_id):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
-	category_feature_dict = readCandidateCategory(category_id)
-	inclusionRelation(category_feature_dict,category_id)
+	file_utils.createDirs(['internal'])
+	category_set = common.getCandidateCategory(category_id)
+	inclusionRelation(category_id,category_set)
 
 if __name__ == '__main__':
-	main(54)
+	category_id = int(sys.argv[1])
+	main(category_id)

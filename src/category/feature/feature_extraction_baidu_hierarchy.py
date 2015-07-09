@@ -1,5 +1,10 @@
 #encoding=utf-8
 import sys
+sys.path.append("../../common/")
+import os
+import text_process
+import file_utils
+import common
 import collections
 import os
 
@@ -14,13 +19,6 @@ class UndirectWeightedGraph:
 		# use a tuple (start, end, weight) instead of a Edge object
 		self.graph[start].append((start, end, weight))
 		# self.graph[end].append((end, start, weight))
-
-def readDir(dir_path):
-	file_path_list = []
-	files = os.listdir(dir_path)
-	for f in files:
-		file_path_list.append(dir_path+f)
-	return file_path_list
 
 def readCategoryInfo(file_path_list):
 	print 'reading category info'
@@ -119,18 +117,12 @@ def main(category_id):
 	main_category_list = [u'棋',u'牌',u'棋牌']
 	# main_category_list = [u'教育',u'学习']
 	# main_category_list = [u'摄影',u'摄像']
-	
-	file_path_list = readDir(data_path+'feature/category/'+str(category_id)+'/clean/')
+
+	file_utils.createDirs(['baidu_baike_hierarchy'])
+	file_path_list = file_utils.getFilePathList('../../scrapy/baidu_baike/crawl_data/'+str(category_id)+'/clean/')
 	category_info_dict = readCategoryInfo(file_path_list)
 	g = generateCategoryNetwork(main_category_list,category_info_dict)
 	hierarchy_node_dict = getHierarchy(g,category_info_dict,main_category_list)
-
-
-	# outfile = open('temp','wb')
-	# for hierarchy_level in hierarchy_node_dict.keys():
-	# 	outfile.write(str(hierarchy_level)+'\r\n')
-	# 	for node in hierarchy_node_dict[hierarchy_level]:
-	# 		outfile.write(str(node[1])+'\r\n')
 
 
 	# for query_category in [u'书籍',u'在线',u'中心',u'基本',u'研究',u'阅读器',u'语文',u'巴菲特',u'学习',u'文化',u'投资']:
@@ -142,7 +134,7 @@ def main(category_id):
 		calculateRelation(g,hierarchy_node_dict,hierarchy_max_dict,category_hierarchy_score_dict,query_category)
 		# break
 
-	outfile = open('hierarchy_'+str(category_id)+'.csv','wb')
+	outfile = open('baidu_baike_hierarchy/'+str(category_id)+'.csv','wb')
 	for category in category_hierarchy_score_dict.keys():
 		outlist = []
 		for level in category_hierarchy_score_dict[category].keys():
@@ -155,4 +147,5 @@ def main(category_id):
 
 
 if __name__ == '__main__':
-	main(54)
+	category_id = int(sys.argv[1])
+	main(category_id)

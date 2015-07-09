@@ -1,24 +1,11 @@
 #encoding=utf-8
 import sys
+sys.path.append('../../common/')
+import text_process
+import file_utils
 import pickle
 
 data_path = '../../../data/'
-
-def isChinese(var):
-	for v in var:
-		if not(0x4e00<=ord(v)<0x9fa6):
-			return False
-	return True
-
-#判断shorter_text是否被longer_text包含
-def isSubset(shorter_text,longer_text):
-	is_subset = False
-	for i in range(len(longer_text)):	
-		if shorter_text == ''.join(longer_text[i:i+len(shorter_text)]):
-			is_subset = True
-		if i+len(shorter_text) == len(longer_text):
-			break
-	return is_subset
 
 def readData(category_id):
 	category_set = set([])
@@ -64,15 +51,15 @@ def combine(category_id,category_list,category_wrapper_dict):
 	print 'combing'
 	tag_set = set([])
 	editor_tag_set = getCategoryEditorTag(category_id)
-	outfile = open('combine_'+str(category_id)+'.txt','wb')
-	outfile2 = open('tag_set_'+str(category_id)+'.txt','wb')
+	outfile = open('combine/'+str(category_id)+'.txt','wb')
+	outfile2 = open('final/'+str(category_id)+'.txt','wb')
 	for i in range(len(category_list)):
 		for j in range(len(category_list)):
 			if i != j :
 				category_i = category_list[i]
 				category_j = category_list[j]
 				if len(category_i) < len(category_j):
-					if isSubset(category_i,category_j) or len(set(category_i)&set(category_j)) == len(category_i):
+					if text_process.isSubset(category_i,category_j) or len(set(category_i)&set(category_j)) == len(category_i):
 						if category_i in category_wrapper_dict.keys():
 							category_wrapper_dict[category_i].append(category_j)
 	for category in category_wrapper_dict.keys():
@@ -89,6 +76,7 @@ def main(category_id):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
+	file_utils.createDirs(['combine','final'])
 	category_list,category_wrapper_dict = readData(category_id)
 	combine(category_id,category_list,category_wrapper_dict)
 

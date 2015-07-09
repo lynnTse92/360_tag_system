@@ -1,39 +1,16 @@
 #encoding=utf-8
 import sys
+sys.path.append("../../common/")
+import os
+import text_process
+import file_utils
+import common
 import pickle
 import jieba,jieba.posseg,jieba.analyse
 
 data_path = '../../../data/'
 
-def isChinese(var):
-	for v in var:
-		if not(0x4e00<=ord(v)<0x9fa6):
-			return False
-	return True
-
-def getStopword():
-	infile = data_path+'stopword.txt'
-	stopword_set = set()
-	infile = open(infile, 'rb')
-	for line in infile:
-		stopword_set.add(line.strip().decode('utf-8'))
-	infile.close()
-	return stopword_set
-
-def readCategory(category_id):
-	print 'reading category'
-	category_set = set([])
-	infile = open(data_path+'candidate_category_'+str(category_id)+'.txt','rb')
-	for row in infile:
-		items = row.strip().split(',')
-		word = items[0].decode('utf-8')
-		fre = int(items[1])
-		category_set.add(word)
-	print '---'+str(len(category_set))
-	return category_set
-
 def title(app_name,tf_dict):
-	stopword_set = getStopword()
 	seg_word_list = jieba.cut(app_name)
 	for word in seg_word_list:
 		if word in tf_dict.keys():
@@ -41,14 +18,12 @@ def title(app_name,tf_dict):
 	return tf_dict
 
 def brief(seg_brief_list,tf_dict):
-	stopword_set = getStopword()
 	for word in seg_brief_list:
 		if word in tf_dict.keys():
 			tf_dict[word] += 1
 	return tf_dict
 
 def tag(app_id,app_tag_dict,tf_dict):
-	stopword_set = getStopword()
 	for tag in app_tag_dict[app_id]:
 		seg_word_list = jieba.cut(tag)
 		for word in seg_word_list:
@@ -57,16 +32,19 @@ def tag(app_id,app_tag_dict,tf_dict):
 	return tf_dict
 
 def tf(category_id,category_set,app_category_dict,app_tag_dict):
-	print 'extracting feature'
+	print '-extracting feature'
 	infile = open(data_path+'all_cn_seg_nwi_clean.txt','rb')
-	outfile = open('tag_tf_'+str(category_id)+'.csv','wb')
-	tf_dict = {}
+	stopword_set = text_process.getStopword(data_path+'stopword.txt')
+	outfile_title = open('title_tf/'+str(category_id)+'.csv','wb')
+	outfile_tag = open('tag_tf/'+str(category_id)+'.csv','wb')
+	title_tf_dict = {}
+	tag_tf_dict = {}
 	for category in category_set:
-		tf_dict.setdefault(category,0)
+		title_tf_dict.setdefault(category,0)
+		tag_tf_dict.setdefault(category,0)
 	row_index = 0
 	for row in infile:
 		row_index += 1
-		# print row_index
 		items = row.strip().split("<@>")
 		try:
 			app_id = int(items[0])
@@ -77,30 +55,37 @@ def tf(category_id,category_set,app_category_dict,app_tag_dict):
 		if app_category_dict[app_id][1] != category_id:
 			continue
 
-		# title(app_name,tf_dict)
+		title(app_name,title_tf_dict)
 		# brief(seg_brief_list,tf_dict)
-		tag(app_id,app_tag_dict,tf_dict)
+		tag(app_id,app_tag_dict,tag_tf_dict)
 
-	max_tf = max(tf_dict.values())
+	max_title_tf = max(title_tf_dict.values())
 	print 'sorting'
-	sorted_list = sorted(tf_dict.items(),key=lambda p:p[1],reverse=True)
-	for val in sorted_list:
-		outfile.write(val[0]+','+str(1.0*val[1]/max_tf)+'\r\n')
+	title_sorted_list = sorted(title_tf_dict.items(),key=lambda p:p[1],reverse=True)
+	for val in title_sorted_list:
+		outfile_title.write(val[0]+','+str(1.0*val[1]/max_title_tf)+'\r\n')
+
+	max_tag_tf = max(tag_tf_dict.values())
+	tag_sorted_list = sorted(tag_tf_dict.items(),key=lambda p:p[1],reverse=True)
+	for val in tag_sorted_list:
+		outfile_tag.write(val[0]+','+str(1.0*val[1]/max_tag_tf)+'\r\n')
 
 def main(category_id):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
-	print 'loading preparation file'
+	print '-loading preparation file'
 	jieba.load_userdict(data_path+"jieba_userdict.txt")
 	app_tag_dict = pickle.load(open(data_path+'app_tag.dict','rb'))
 	app_category_dict = pickle.load(open(data_path+'app_category.dict','rb'))
 
-	category_set = readCategory(category_id)
+	file_utils.createDirs(['tag_tf','title_tf'])
+	category_set = common.getCandidateCategory(category_id)
 	tf(category_id,category_set,app_category_dict,app_tag_dict)
 
 if __name__ == '__main__':
-	main(54)
+	category_id = int(sys.argv[1])
+	main(category_id)
 
 
 

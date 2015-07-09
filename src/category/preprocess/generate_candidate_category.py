@@ -30,7 +30,7 @@ def generateCandidateCategory(category_id):
 	print 'reading file'
 	word_fre_dict = {}
 	infile = open(data_path+'all_cn_seg_nwi_clean.txt','rb')
-	outfile = open(data_path+'candidate_category_'+str(category_id)+'.txt','wb')
+	outfile = open('candidate_category/'+str(category_id)+'.txt','wb')
 	for row in infile:
 		items = row.strip().split("<@>")
 		try:

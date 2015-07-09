@@ -1,36 +1,21 @@
 #encoding=utf-8
 import sys
+sys.path.append("../../common/")
+import os
+import text_process
+import file_utils
+import common
 import jieba,jieba.posseg,jieba.analyse
 
 data_path = '../../../data/'
 
-
-#判断shorter_text是否被longer_text包含
-def isSubset(shorter_text,longer_text):
-	is_subset = False
-	for i in range(len(longer_text)):	
-		if shorter_text == ''.join(longer_text[i:i+len(shorter_text)]):
-			is_subset = True
-		if i+len(shorter_text) == len(longer_text):
-			break
-	return is_subset
-
-def readCandidateCategory(category_id):
-	print 'reading candidate category'
-	category_feature_dict = {}
-	infile = open(data_path+'candidate_category_'+str(category_id)+'.txt','rb')
-	for row in infile:
-		items = row.strip().split(',')
-		word = items[0].decode('utf-8')
-		fre = int(items[1])
-		category_feature_dict.setdefault(word,[0,0,[],set([])])
-	return category_feature_dict
-
-def extractFeatureFromWikiCategory(category_id,relevant_category_list,category_feature_dict):
+def extractFeatureFromWikiCategory(category_id,relevant_category_list,category_set):
 	print 'extracting feature from wikipedia category'
-	infile = open(data_path+'category_path_clean.txt','rb')
-	outfile = open('category_feature_wiki_'+str(category_id)+'.csv','wb')
-	category_set = set(category_feature_dict.keys())
+	infile = open('../../scrapy/wikipedia/category_path_clean.txt','rb')
+	outfile = open('wikipedia/'+str(category_id)+'.csv','wb')
+	category_feature_dict = {}
+	for category in category_set:
+		category_feature_dict.setdefault(category,[0,0,[],set([])])
 	max_cover_num = 0
 	row_index = 0
 	for row in infile:
@@ -72,8 +57,6 @@ def extractFeatureFromWikiCategory(category_id,relevant_category_list,category_f
 
 			# if len(set(jieba.cut(word)) & category_set) >= 1:
 			# 	level += 1
-
-
 
 			if word in category_set and word not in handled_word_set:
 				category_feature_dict[word][0] = 1
@@ -118,14 +101,15 @@ def main(category_id):
 	sys.setdefaultencoding('utf-8')
 
 	jieba.load_userdict(data_path+"jieba_userdict.txt")
-
+	file_utils.createDirs(['wikipedia'])
 	relevant_category_list = [u'棋',u'牌',u'牌类',u'棋类',u'纸牌']
 	# relevant_category_list = [u'阅读',u'新闻',u'读书',u'资讯']
 	# relevant_category_list = [u'教育',u'学习']
 	# relevant_category_list = [u'摄影',u'摄像']
 
-	category_feature_dict = readCandidateCategory(category_id)
-	extractFeatureFromWikiCategory(category_id,relevant_category_list,category_feature_dict)
+	category_set = common.getCandidateCategory(category_id)
+	extractFeatureFromWikiCategory(category_id,relevant_category_list,category_set)
 
 if __name__ == '__main__':
-	main(54)
+	category_id = int(sys.argv[1])
+	main(category_id)
