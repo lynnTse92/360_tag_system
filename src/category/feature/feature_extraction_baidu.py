@@ -18,7 +18,6 @@ def readCategoryInfo(file_path_list):
 	file_index = 0
 	for file_path in file_path_list:
 		file_index += 1
-		print file_index
 		category = file_path.split('/')[-1]
 		category = category.decode('utf-8')
 		# category = unicode(category,'gbk').decode('utf-8')
