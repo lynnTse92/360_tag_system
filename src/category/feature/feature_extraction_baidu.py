@@ -67,7 +67,6 @@ def getMainCategoryKeywords(main_category_list,category_info_dict):
 		for relevant_category in main_category_list:
 			if len(category) > len(relevant_category):
 				if text_process.isSubset(relevant_category,category):
-					print category
 					main_category_keywords.append(category)
 	return main_category_keywords
 
@@ -80,10 +79,11 @@ def main(category_id):
 	file_utils.createDirs(['baidu_baike'])
 
 	toClearAmbiguity = False
-	main_category_list = [u'棋',u'牌',u'棋牌']
+	# main_category_list = [u'棋',u'牌',u'棋牌']
 	# main_category_list = [u'阅读',u'新闻']
 	# main_category_list = [u'教育',u'学习']
-	# main_category_list = [u'摄影',u'摄像']
+	main_category_list = [u'考试']
+	# main_category_list = [u'相机']
 
 
 	for relevant_category in main_category_list:

@@ -10,7 +10,7 @@ data_path = '../../../data/'
 def readData(category_id):
 	category_set = set([])
 	category_wrapper_dict = {}
-	infile = open('result_pointwise_'+str(category_id)+'.txt')
+	infile = open('result_pointwise/'+str(category_id)+'.txt')
 	for row in infile:
 		items = row.strip().split(',')
 		category = items[0].decode('utf-8')
@@ -81,6 +81,7 @@ def main(category_id):
 	combine(category_id,category_list,category_wrapper_dict)
 
 if __name__ == '__main__':
-	category_id = int(sys.argv[1])
+	# category_id = int(sys.argv[1])
+	category_id = 102228
 	main(category_id)
 	

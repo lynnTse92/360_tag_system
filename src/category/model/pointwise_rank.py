@@ -23,7 +23,7 @@ def readTrainData(category_feature_dict):
 	print 'reading train data'
 	X = []
 	Y = []
-	infile = open('train_data/train_pointwise2.csv','rb')
+	infile = open('train_data/train_pointwise_102228.csv','rb')
 	for row in infile:
 		items = row.strip().split(',')
 		x_name = items[0].decode('utf-8')
@@ -62,9 +62,13 @@ def test(clf,X_test,X_test_name,category_id):
 		x_test_name = X_test_name[i]
 		result = clf.predict(x_test)[0]
 		label_category_dict.setdefault(result,[]).append(x_test_name)
-	for label in label_category_dict.keys():
-		for x_test_name in label_category_dict[label]:
-			outfile.write(x_test_name+','+str(label)+'\r\n')
+	sorted_list = sorted(label_category_dict.items(),key=lambda p:p[0],reverse=True)
+	for record in sorted_list:
+		for x_test_name in record[1]:
+			outfile.write(x_test_name+','+str(record[0])+'\r\n')	
+	# for label in label_category_dict.keys():
+	# 	for x_test_name in label_category_dict[label]:
+	# 		outfile.write(x_test_name+','+str(label)+'\r\n')
 
 def main(category_id):
 	reload(sys)
@@ -84,4 +88,4 @@ def main(category_id):
 
 
 if __name__ == '__main__':
-	main(54)
+	main(102232)

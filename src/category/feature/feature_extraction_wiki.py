@@ -9,7 +9,7 @@ import jieba,jieba.posseg,jieba.analyse
 
 data_path = '../../../data/'
 
-def extractFeatureFromWikiCategory(category_id,relevant_category_list,category_set):
+def extractFeatureFromWikiCategory(category_id,main_category_list,category_set):
 	print 'extracting feature from wikipedia category'
 	infile = open('../../scrapy/wikipedia/category_path_clean.txt','rb')
 	outfile = open('wikipedia/'+str(category_id)+'.csv','wb')
@@ -29,7 +29,7 @@ def extractFeatureFromWikiCategory(category_id,relevant_category_list,category_s
 			word = words[i].decode('utf-8')
 			
 			isRelevant = False
-			for relevant_category in relevant_category_list:
+			for relevant_category in main_category_list:
 				if relevant_category in row.strip().decode('utf-8'):
 					isRelevant = True
 					break
@@ -102,13 +102,14 @@ def main(category_id):
 
 	jieba.load_userdict(data_path+"jieba_userdict.txt")
 	file_utils.createDirs(['wikipedia'])
-	relevant_category_list = [u'棋',u'牌',u'牌类',u'棋类',u'纸牌']
-	# relevant_category_list = [u'阅读',u'新闻',u'读书',u'资讯']
-	# relevant_category_list = [u'教育',u'学习']
-	# relevant_category_list = [u'摄影',u'摄像']
+	# main_category_list = [u'棋',u'牌',u'牌类',u'棋类',u'纸牌']
+	# main_category_list = [u'阅读',u'新闻',u'读书',u'资讯']
+	# main_category_list = [u'教育',u'学习']
+	# main_category_list = [u'相机']
+	main_category_list = [u'考试']
 
 	category_set = common.getCandidateCategory(category_id)
-	extractFeatureFromWikiCategory(category_id,relevant_category_list,category_set)
+	extractFeatureFromWikiCategory(category_id,main_category_list,category_set)
 
 if __name__ == '__main__':
 	category_id = int(sys.argv[1])

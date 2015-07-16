@@ -114,9 +114,10 @@ def main(category_id):
 	sys.setdefaultencoding('utf-8')
 
 	# main_category_list = [u'阅读',u'资讯',u'新闻']
-	main_category_list = [u'棋',u'牌',u'棋牌']
+	# main_category_list = [u'棋',u'牌',u'棋牌']
 	# main_category_list = [u'教育',u'学习']
-	# main_category_list = [u'摄影',u'摄像']
+	main_category_list = [u'考试']
+	# main_category_list = [u'相机']
 
 	file_utils.createDirs(['baidu_baike_hierarchy'])
 	file_path_list = file_utils.getFilePathList('../../scrapy/baidu_baike/crawl_data/'+str(category_id)+'/clean/')

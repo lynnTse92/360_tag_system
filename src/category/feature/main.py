@@ -2,7 +2,7 @@ import os
 import sys
 
 def getCategoryList():
-	category_list = [15,54,102228,102232]
+	category_list = [102232]
 	return category_list
 
 def main(category_id):
