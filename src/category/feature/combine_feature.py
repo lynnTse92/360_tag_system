@@ -6,15 +6,15 @@ import text_process
 import file_utils
 import common
 
-def combineFeature(category_id,category_set):
-	outfile = open('combine_feature/'+str(category_id)+'.csv','wb')
+def combineFeature(category_id,category_path,category_set):
+	outfile = open('combine_feature/'+str(category_path)+'.csv','wb')
 	category_feature_dict = {}
 	for category in category_set:
 		category_feature_dict.setdefault(category,[])
 		category_feature_dict[category] += [len(category)]
 
 	print 'reading baidu feature'
-	infile = open('baidu_baike/'+str(category_id)+'.csv','rb')
+	infile = open('baidu_baike/'+str(category_path)+'.csv','rb')
 	for row in infile:
 		items = row.strip().split(',')
 		category = items[0].decode('utf-8')
@@ -23,7 +23,7 @@ def combineFeature(category_id,category_set):
 			category_feature_dict[category] += [score]
 
 	print 'reading wiki feature'
-	infile = open('wikipedia/'+str(category_id)+'.csv','rb')
+	infile = open('wikipedia/'+str(category_path)+'.csv','rb')
 	for row in infile:
 		items = row.strip().split(',')
 		category = items[0].decode('utf-8')
@@ -32,7 +32,7 @@ def combineFeature(category_id,category_set):
 			category_feature_dict[category] += feature_list
 
 	print 'reading title_tf feature'
-	infile = open('title_tf/'+str(category_id)+'.csv','rb')
+	infile = open('title_tf/'+str(category_path)+'.csv','rb')
 	for row in infile:
 		items = row.strip().split(',')
 		category = items[0].decode('utf-8')
@@ -41,7 +41,7 @@ def combineFeature(category_id,category_set):
 			category_feature_dict[category] += [score]
 
 	print 'reading tag_tf feature'
-	infile = open('tag_tf/'+str(category_id)+'.csv','rb')
+	infile = open('tag_tf/'+str(category_path)+'.csv','rb')
 	for row in infile:
 		items = row.strip().split(',')
 		category = items[0].decode('utf-8')
@@ -59,7 +59,7 @@ def combineFeature(category_id,category_set):
 			category_feature_dict[category] += [score]
 
 	print 'reading hierarchy feature'
-	infile = open('baidu_baike_hierarchy/'+str(category_id)+'.csv','rb')
+	infile = open('baidu_baike_hierarchy/'+str(category_path)+'.csv','rb')
 	for row in infile:
 		items = row.strip().split(',')
 		category = items[0].decode('utf-8')
@@ -76,14 +76,21 @@ def combineFeature(category_id,category_set):
 	for category in category_feature_dict.keys():
 		outfile.write(category+','+','.join([str(val) for val in category_feature_dict[category]])+'\r\n')
 
-def main(category_id):
+def main(category_path):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
+	category_path_list = category_path.split('_')
+	category_id = int(category_path_list[0])
+	query_category = ""
+	if len(category_path_list) >= 2:
+		query_category = category_path_list[-1].decode('utf-8')
+	main_category_list = [query_category]
+
 	file_utils.createDirs(['combine_feature'])
 	category_set = common.getCandidateCategory(category_id)
-	combineFeature(category_id,category_set)
+	combineFeature(category_id,category_path,category_set)
 
 if __name__ == '__main__':
-	category_id = int(sys.argv[1])
-	main(category_id)
+	category_path = str(sys.argv[1])
+	main(category_path)

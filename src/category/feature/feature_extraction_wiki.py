@@ -9,10 +9,10 @@ import jieba,jieba.posseg,jieba.analyse
 
 data_path = '../../../data/'
 
-def extractFeatureFromWikiCategory(category_id,main_category_list,category_set):
+def extractFeatureFromWikiCategory(category_id,category_path,main_category_list,category_set):
 	print 'extracting feature from wikipedia category'
 	infile = open('../../scrapy/wikipedia/category_path_clean.txt','rb')
-	outfile = open('wikipedia/'+str(category_id)+'.csv','wb')
+	outfile = open('wikipedia/'+str(category_path)+'.csv','wb')
 	category_feature_dict = {}
 	for category in category_set:
 		category_feature_dict.setdefault(category,[0,0,[],set([])])
@@ -21,6 +21,13 @@ def extractFeatureFromWikiCategory(category_id,main_category_list,category_set):
 	for row in infile:
 		row_index += 1
 		# print row_index
+		
+		if u'考试' in row:
+			words = row.strip().split(',')
+			for word in words:
+				if word in category_set:
+					print word
+
 		words = row.strip().split(',')
 		words = [word.decode('utf-8') for word in words]
 		level = 1
@@ -96,21 +103,23 @@ def extractFeatureFromWikiCategory(category_id,main_category_list,category_set):
 #3.average_level_in_wiki
 #4.cover_num
 
-def main(category_id):
+def main(category_path):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
 	jieba.load_userdict(data_path+"jieba_userdict.txt")
 	file_utils.createDirs(['wikipedia'])
-	# main_category_list = [u'棋',u'牌',u'牌类',u'棋类',u'纸牌']
-	# main_category_list = [u'阅读',u'新闻',u'读书',u'资讯']
-	# main_category_list = [u'教育',u'学习']
-	# main_category_list = [u'相机']
-	main_category_list = [u'考试']
+
+	category_path_list = category_path.split('_')
+	category_id = int(category_path_list[0])
+	query_category = ""
+	if len(category_path_list) >= 2:
+		query_category = category_path_list[-1].decode('utf-8')
+	main_category_list = [query_category]
 
 	category_set = common.getCandidateCategory(category_id)
-	extractFeatureFromWikiCategory(category_id,main_category_list,category_set)
+	extractFeatureFromWikiCategory(category_id,category_path,main_category_list,category_set)
 
 if __name__ == '__main__':
-	category_id = int(sys.argv[1])
-	main(category_id)
+	category_path = str(sys.argv[1])
+	main(category_path)

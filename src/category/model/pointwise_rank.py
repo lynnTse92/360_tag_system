@@ -6,6 +6,11 @@ import numpy as np
 from sklearn import svm
 from sklearn import tree
 from sklearn.externals import joblib
+from sklearn import linear_model
+from sklearn.kernel_ridge import KernelRidge
+from sklearn.ensemble import RandomForestClassifier
+
+
 
 data_path = '../'
 
@@ -19,11 +24,11 @@ def getFeature(category_id):
 		category_feature_dict.setdefault(category,features)
 	return category_feature_dict
 
-def readTrainData(category_feature_dict):
+def readTrainData(category_feature_dict,category_path):
 	print 'reading train data'
 	X = []
 	Y = []
-	infile = open('train_data/train_pointwise_102228.csv','rb')
+	infile = open('train_data/train_pointwise_'+category_path+'.csv','rb')
 	for row in infile:
 		items = row.strip().split(',')
 		x_name = items[0].decode('utf-8')
@@ -47,10 +52,13 @@ def readTestData(category_feature_dict):
 
 def model(X,Y):
 	print 'training model'
-	clf = tree.DecisionTreeClassifier()
+	clf = linear_model.LinearRegression()
+	# clf = KernelRidge(alpha=1.0)
+	# clf = RandomForestClassifier(n_estimators=10)
+	# clf = tree.DecisionTreeClassifier()
 	# clf = svm.SVC()
 	clf = clf.fit(X, Y)
-	joblib.dump(clf, 'decision_tree_classifier.model',compress=3)
+	joblib.dump(clf, 'classifier.model',compress=3)
 	return clf
 
 def test(clf,X_test,X_test_name,category_id):
@@ -70,22 +78,22 @@ def test(clf,X_test,X_test_name,category_id):
 	# 	for x_test_name in label_category_dict[label]:
 	# 		outfile.write(x_test_name+','+str(label)+'\r\n')
 
-def main(category_id):
+def main(category_path):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 	file_utils.createDirs(['result_pointwise'])
 
-	# category_feature_dict = getFeature(category_id)
-	# X_train,Y = readTrainData(category_feature_dict)
+	# category_feature_dict = getFeature(category_path)
+	# X_train,Y = readTrainData(category_feature_dict,category_path)
 	# X_test,X_test_name = readTestData(category_feature_dict)
 	# clf = model(X_train,Y)
-	# test(clf,X_test,X_test_name,category_id)
+	# test(clf,X_test,X_test_name,category_path)
 
-	category_feature_dict = getFeature(category_id)
+	category_feature_dict = getFeature(category_path)
 	X_test,X_test_name = readTestData(category_feature_dict)
-	clf = joblib.load('decision_tree_classifier.model')
-	test(clf,X_test,X_test_name,category_id)
+	clf = joblib.load('classifier.model')
+	test(clf,X_test,X_test_name,category_path)
 
 
 if __name__ == '__main__':
-	main(102232)
+	main(u'54_棋')

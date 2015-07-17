@@ -31,12 +31,21 @@ def tag(app_id,app_tag_dict,tf_dict):
 				tf_dict[word] += 1
 	return tf_dict
 
-def tf(category_id,category_set,app_category_dict,app_tag_dict):
+def isRelevant(query_category,app_name,seg_brief_list):
+	is_relevant = False
+	category_path_list = category_path.split('_')[1:]
+	if query_category in app_name:
+		is_relevant = True
+	if query_category in ' '.join(seg_brief_list):
+		is_relevant = True
+	return is_relevant
+
+def tf(category_id,category_path,query_category,category_set,app_category_dict,app_tag_dict):
 	print '-extracting feature'
 	infile = open(data_path+'all_cn_seg_nwi_clean.txt','rb')
 	stopword_set = text_process.getStopword(data_path+'stopword.txt')
-	outfile_title = open('title_tf/'+str(category_id)+'.csv','wb')
-	outfile_tag = open('tag_tf/'+str(category_id)+'.csv','wb')
+	outfile_title = open('title_tf/'+str(category_path)+'.csv','wb')
+	outfile_tag = open('tag_tf/'+str(category_path)+'.csv','wb')
 	title_tf_dict = {}
 	tag_tf_dict = {}
 	for category in category_set:
@@ -54,7 +63,10 @@ def tf(category_id,category_set,app_category_dict,app_tag_dict):
 			continue
 		if app_category_dict[app_id][1] != category_id:
 			continue
-
+		if query_category != "":
+			if not isRelevant(query_category,app_name,seg_brief_list):
+				continue
+				
 		title(app_name,title_tf_dict)
 		# brief(seg_brief_list,tf_dict)
 		tag(app_id,app_tag_dict,tag_tf_dict)
@@ -70,7 +82,7 @@ def tf(category_id,category_set,app_category_dict,app_tag_dict):
 	for val in tag_sorted_list:
 		outfile_tag.write(val[0]+','+str(1.0*val[1]/max_tag_tf)+'\r\n')
 
-def main(category_id):
+def main(category_path):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
@@ -80,12 +92,17 @@ def main(category_id):
 	app_category_dict = pickle.load(open(data_path+'app_category.dict','rb'))
 
 	file_utils.createDirs(['tag_tf','title_tf'])
+	category_path_list = category_path.split('_')
+	category_id = int(category_path_list[0])
+	query_category = ""
+	if len(category_path_list) >= 2:
+		query_category = category_path_list[-1].decode('utf-8')
 	category_set = common.getCandidateCategory(category_id)
-	tf(category_id,category_set,app_category_dict,app_tag_dict)
+	tf(category_id,category_path,query_category,category_set,app_category_dict,app_tag_dict)
 
 if __name__ == '__main__':
-	category_id = int(sys.argv[1])
-	main(category_id)
+	category_path = str(sys.argv[1])
+	main(category_path)
 
 
 

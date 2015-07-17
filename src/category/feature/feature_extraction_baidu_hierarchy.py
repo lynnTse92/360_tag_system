@@ -109,15 +109,16 @@ def calculateRelation(g,hierarchy_node_dict,hierarchy_max_dict,category_hierarch
 		# print '--------------------------------'
 
 
-def main(category_id):
+def main(category_path):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
-	# main_category_list = [u'阅读',u'资讯',u'新闻']
-	# main_category_list = [u'棋',u'牌',u'棋牌']
-	# main_category_list = [u'教育',u'学习']
-	main_category_list = [u'考试']
-	# main_category_list = [u'相机']
+	category_path_list = category_path.split('_')
+	category_id = int(category_path_list[0])
+	query_category = ""
+	if len(category_path_list) >= 2:
+		query_category = category_path_list[-1].decode('utf-8')
+	main_category_list = [query_category]
 
 	file_utils.createDirs(['baidu_baike_hierarchy'])
 	file_path_list = file_utils.getFilePathList('../../scrapy/baidu_baike/crawl_data/'+str(category_id)+'/clean/')
@@ -126,8 +127,6 @@ def main(category_id):
 	hierarchy_node_dict = getHierarchy(g,category_info_dict,main_category_list)
 
 
-	# for query_category in [u'书籍',u'在线',u'中心',u'基本',u'研究',u'阅读器',u'语文',u'巴菲特',u'学习',u'文化',u'投资']:
-	# for query_category in [u'斗地主',u'德州',u'扑克',u'桌游',u'三张',u'象棋',u'麻将',u'三国杀',u'接龙',u'中国']:
 	hierarchy_max_dict = {}
 	category_hierarchy_score_dict = {}
 	for query_category in category_info_dict.keys():
@@ -135,11 +134,13 @@ def main(category_id):
 		calculateRelation(g,hierarchy_node_dict,hierarchy_max_dict,category_hierarchy_score_dict,query_category)
 		# break
 
-	outfile = open('baidu_baike_hierarchy/'+str(category_id)+'.csv','wb')
+	outfile = open('baidu_baike_hierarchy/'+str(category_path)+'.csv','wb')
 	for category in category_hierarchy_score_dict.keys():
 		outlist = []
 		for level in category_hierarchy_score_dict[category].keys():
-			score_nomalize = 1.0*category_hierarchy_score_dict[category][level]/hierarchy_max_dict[level]
+			score_nomalize = 0
+			if hierarchy_max_dict[level] != 0:
+				score_nomalize = 1.0*category_hierarchy_score_dict[category][level]/hierarchy_max_dict[level]
 			outlist.append(score_nomalize)
 		best_level = -1
 		if max(outlist) != 0:
@@ -148,5 +149,5 @@ def main(category_id):
 
 
 if __name__ == '__main__':
-	category_id = int(sys.argv[1])
-	main(category_id)
+	category_path = str(sys.argv[1])
+	main(category_path)
