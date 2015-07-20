@@ -52,10 +52,10 @@ def readTestData(category_feature_dict):
 
 def model(X,Y):
 	print 'training model'
-	clf = linear_model.LinearRegression()
+	# clf = linear_model.LinearRegression()
 	# clf = KernelRidge(alpha=1.0)
 	# clf = RandomForestClassifier(n_estimators=10)
-	# clf = tree.DecisionTreeClassifier()
+	clf = tree.DecisionTreeClassifier()
 	# clf = svm.SVC()
 	clf = clf.fit(X, Y)
 	joblib.dump(clf, 'classifier.model',compress=3)
@@ -83,17 +83,17 @@ def main(category_path):
 	sys.setdefaultencoding('utf-8')
 	file_utils.createDirs(['result_pointwise'])
 
-	# category_feature_dict = getFeature(category_path)
-	# X_train,Y = readTrainData(category_feature_dict,category_path)
-	# X_test,X_test_name = readTestData(category_feature_dict)
-	# clf = model(X_train,Y)
-	# test(clf,X_test,X_test_name,category_path)
-
 	category_feature_dict = getFeature(category_path)
+	X_train,Y = readTrainData(category_feature_dict,category_path)
 	X_test,X_test_name = readTestData(category_feature_dict)
-	clf = joblib.load('classifier.model')
+	clf = model(X_train,Y)
 	test(clf,X_test,X_test_name,category_path)
+
+	# category_feature_dict = getFeature(category_path)
+	# X_test,X_test_name = readTestData(category_feature_dict)
+	# clf = joblib.load('classifier.model')
+	# test(clf,X_test,X_test_name,category_path)
 
 
 if __name__ == '__main__':
-	main(u'54_棋')
+	main(u'54_牌')

@@ -3,7 +3,7 @@ import os
 import sys
 
 def getCategoryPathList():
-	category_path_list = [u'102232_考试']
+	category_path_list = [u'54_棋']
 	return category_path_list
 
 def main(category_path):

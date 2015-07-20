@@ -21,11 +21,11 @@ def extractFeatureFromWikiCategory(category_id,category_path,main_category_list,
 	for row in infile:
 		row_index += 1
 		# print row_index
-		
-		if u'考试' in row:
-			words = row.strip().split(',')
-			for word in words:
-				if word in category_set:
+
+		if u'纸牌' in row.decode('utf-8'):
+			print row.decode('utf-8')
+			for word in category_set:
+				if word in row.decode('utf-8'):
 					print word
 
 		words = row.strip().split(',')

@@ -130,7 +130,6 @@ def main(category_path):
 	hierarchy_max_dict = {}
 	category_hierarchy_score_dict = {}
 	for query_category in category_info_dict.keys():
-		print query_category
 		calculateRelation(g,hierarchy_node_dict,hierarchy_max_dict,category_hierarchy_score_dict,query_category)
 		# break
 
