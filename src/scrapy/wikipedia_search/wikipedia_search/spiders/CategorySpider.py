@@ -10,18 +10,18 @@ class CategorySpider(BaseSpider):
 
 	name = "wikipedia_search"
 	host = "https://zh.wikipedia.org"
-	category_id = 54
-	page_size = 5
-	page_num = 10
+	input_name = u'17_笔记备忘'
+	page_size = 10
+	page_num = 5
 
 	def start_requests(self):
-		infile = open('data/candidate_category/'+str(self.category_id)+'.txt','rb')
+		infile = open('data/candidate_category/'+self.input_name+'.txt','rb')
 		requests = []
 		for row in infile:
 			category = row.split(',')[0].decode('utf-8')
-			for page in range(self.page_num):
-				request_url = u"https://zh.wikipedia.org/w/index.php?limit="+str(self.page_size)+"&offset="+str(page)+"&fulltext=Search&search="+category
-				requests.append(scrapy.FormRequest(request_url,meta={'offset':str(page)},callback=lambda response,category=category:self.parseSearchPage(response,category)))
+			for offset in range(self.page_num):
+				request_url = u"https://zh.wikipedia.org/w/index.php?limit="+str(self.page_size)+"&offset="+str(offset)+"&fulltext=Search&search="+category
+				requests.append(scrapy.FormRequest(request_url,meta={'offset':str(offset)},callback=lambda response,category=category:self.parseSearchPage(response,category)))
 		return requests
 
 	def parseSearchPage(self,response,category):

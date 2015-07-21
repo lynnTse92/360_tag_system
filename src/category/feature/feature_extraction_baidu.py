@@ -46,6 +46,7 @@ def extractFeature(category_id,category_path,main_category_list,sub_category_lis
 			sub_category_score_dict[sub_category] = total_score
 
 	outfile = open('baidu_baike/'+str(category_path)+'.csv','wb')
+	# outfile = open('baidu_baike_search/'+str(category_path)+'.csv','wb')
 	
 	max_score = max(sub_category_score_dict.values())
 	sorted_list = sorted(sub_category_score_dict.items(),key=lambda p:p[1],reverse=True)
@@ -74,8 +75,10 @@ def main(category_path):
 	main_category_list = [query_category]
 
 	file_path_list = file_utils.getFilePathList('../../scrapy/baidu_baike/crawl_data/'+str(category_id)+'/clean/')
+	# file_path_list = file_utils.getFilePathList('../../scrapy/baidu_baike_search/clean_data/')
 	category_info_dict = readCategoryInfo(file_path_list)
 	file_utils.createDirs(['baidu_baike'])
+	# file_utils.createDirs(['baidu_baike_search'])
 
 	sub_category_list = category_info_dict.keys()
 	extractFeature(category_id,category_path,main_category_list,sub_category_list,category_info_dict)

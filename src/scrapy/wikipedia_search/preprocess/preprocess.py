@@ -6,11 +6,11 @@ import jieba.posseg as pseg
 import jieba.analyse
 from scrapy.selector import Selector
 
-def readJson(category_id):
+def readJson(category_path):
 	print 'reading json'
 	json_str = ""
-	infile = open('../crawl_data/wikipedia_'+str(category_id)+'.json',"rb")
-	outfile = open('../clean_data/wikipedia_'+str(category_id)+'.json',"wb")
+	infile = open('../crawl_data/'+category_path+'.json',"rb")
+	outfile = open('../clean_data/'+category_path+'.json',"wb")
 	row_index = 0
 	for row in infile:
 		row_index += 1
@@ -60,11 +60,13 @@ def readJson(category_id):
 			print 'opps'
 	
 
-def main(category_id):
+def main(category_path):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
-	json_object = readJson(category_id)
+	json_object = readJson(category_path)
 
 if __name__ == '__main__':
-	main(54)
+	category_path = u"17_笔记备忘"
+	main(category_path)
+	

@@ -63,9 +63,6 @@ def clean(category_id,category_crawl_dict,category_set):
 		for val in sorted_list:
 			outfile.write(val[0]+','+str(val[1])+'\r\n')
 
-
-
-
 def main(category_id):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
@@ -78,4 +75,5 @@ def main(category_id):
 	clean(category_id,category_crawl_dict,category_set)
 
 if __name__ == '__main__':
-	main(54)
+	category_path = u"17_笔记备忘"
+	main(category_path)

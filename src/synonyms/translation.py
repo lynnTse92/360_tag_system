@@ -13,11 +13,11 @@ youdao_api = "fanyi.youdao.com/openapi.do?keyfrom=zjulab&key=700725208&type=data
 host = "fanyi.youdao.com"
 addr = "/openapi.do?keyfrom=zjulab&key=700725208&type=data&doctype=json&version=1.1&"
 
-def getCandidateCategory(category_id):
+def getCandidateCategory(category_path):
 	print 'reading category'
 	category_set = set([])
 	category_parent_dict = {}
-	infile = open('../category/preprocess/candidate_category/'+str(category_id)+'.txt','rb')
+	infile = open('../category/preprocess/candidate_category/'+str(category_path)+'.txt','rb')
 	for row in infile:
 		items = row.strip().split(',')
 		word = items[0].decode('utf-8')
@@ -87,10 +87,10 @@ def translate(category_set):
 
 	return trans_category_dict
 
-def mineSysnonyms(category_id,trans_category_dict,category_parent_dict):
+def mineSysnonyms(category_path,trans_category_dict,category_parent_dict):
 	print 'mining sysnonyms'
 	sysnonyms_set_dict = {}
-	outfile = open('sysnonyms_'+str(category_id)+'.txt','wb')
+	outfile = open('sysnonyms_'+str(category_path)+'.txt','wb')
 	for trans in trans_category_dict.keys():
 		category_list = list(trans_category_dict[trans])
 		for i in range(len(category_list)):
@@ -113,11 +113,11 @@ def getRoot(category_parent_dict,category):
 		return category
 
 
-def main(category_id):
+def main(category_path):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
-	category_set,category_parent_dict = getCandidateCategory(category_id)
+	category_set,category_parent_dict = getCandidateCategory(category_path)
 	trans_category_dict = translate(category_set)
 
 	for trans in trans_category_dict.keys():
@@ -126,9 +126,9 @@ def main(category_id):
 		print trans
 		print ' '.join(trans_category_dict[trans])
 
-	mineSysnonyms(category_id,trans_category_dict,category_parent_dict)
+	mineSysnonyms(category_path,trans_category_dict,category_parent_dict)
 
 if __name__ == '__main__':
-	category_id = 102228
-	main(category_id)
+	category_path = u"17_笔记备忘"
+	main(category_path)
 
