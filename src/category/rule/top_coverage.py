@@ -6,7 +6,7 @@ import json
 import pickle
 import jieba,jieba.posseg,jieba.analyse
 
-def stat(top_coverage_category_info_dict,category_stat_dict,all_app_counter):
+def rankTopCoverage(top_coverage_category_info_dict,category_stat_dict,all_app_counter):
 	category_coverage_ratio_dict = {}
 	already_cover_app_set = set()
 	if len(top_coverage_category_info_dict.keys()) != 0:
@@ -49,31 +49,23 @@ def calculateCoverage(category_stat_dict):
 		app_brief = json_obj["soft_brief"]
 		app_download = int(json_obj["download_times"])
 
-		if app_download < 100:
+		if app_download < 1000:
 			continue
 
 		all_app_counter += 1
 
-		seg_title_list = jieba.cut(app_name)
-		seg_brief_list = jieba.cut(app_brief)
+		for delegate_category in category_stat_dict.keys():
+			for relevant_category in category_stat_dict[delegate_category][0]:
+				if relevant_category in app_name or relevant_category in app_brief:
+					category_stat_dict[delegate_category][1].add(app_id)
+					break
 
-		for seg_title in seg_title_list:
-			if text_process.isChinese(seg_title) and seg_title not in stopword_set:
-				for main_category in category_stat_dict.keys():
-					if seg_title in category_stat_dict[main_category][0]:
-						category_stat_dict[main_category][1].add(app_id)
-
-		for seg_brief in seg_brief_list:
-			if text_process.isChinese(seg_brief) and seg_brief not in stopword_set: 
-				for main_category in category_stat_dict.keys():
-					if seg_brief in category_stat_dict[main_category][0]:
-						category_stat_dict[main_category][1].add(app_id)
-	
 	print all_app_counter
 
 	top_coverage_category_info_dict = {}
 	for iter_num in range(100):
-		stat(top_coverage_category_info_dict,category_stat_dict,all_app_counter)
+		print 'current iter num: '+str(iter_num)
+		rankTopCoverage(top_coverage_category_info_dict,category_stat_dict,all_app_counter)
 
 def getLocationCategorySet():
 	print 'getting comment category'
@@ -221,17 +213,7 @@ def main(category_path):
 	calculateCoverage(category_stat_dict)
 
 if __name__ == '__main__':
-
 	category_path = u"17"
 	main(category_path)
-
-
-
-
-
-
-
-
-
 
 
