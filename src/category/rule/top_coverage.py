@@ -33,6 +33,7 @@ def rankTopCoverage(top_coverage_category_info_dict,category_stat_dict,all_app_c
 			already_cover_app_set = already_cover_app_set | cover_set
 
 	print 1.0*len(already_cover_app_set)/all_app_counter
+	return 1.0*len(already_cover_app_set)/all_app_counter
 
 def calculateCoverage(category_stat_dict):
 	print 'loading jieba userdict'
@@ -65,7 +66,9 @@ def calculateCoverage(category_stat_dict):
 	top_coverage_category_info_dict = {}
 	for iter_num in range(100):
 		print 'current iter num: '+str(iter_num)
-		rankTopCoverage(top_coverage_category_info_dict,category_stat_dict,all_app_counter)
+		coverage_ratio = rankTopCoverage(top_coverage_category_info_dict,category_stat_dict,all_app_counter)
+		if coverage_ratio >= 0.9:
+			break
 
 def getLocationCategorySet():
 	print 'getting comment category'
