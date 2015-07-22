@@ -55,7 +55,7 @@ def clean(category_path,category_crawl_dict,category_set):
 	stop_word_set = text_process.getStopword(data_path+'stopword.txt')
 	for category in category_crawl_dict.keys():
 		word_score_dict = {}
-		outfile = open('../clean_data/'+str(category_path)+'_'+category,'wb')
+		outfile = open('../clean_data/'+str(category_path)+'/'+category,'wb')
 		print category
 		for page in category_crawl_dict[category]:
 			offset_weight = 1.0*(5-int(page['offset']))/5
@@ -114,7 +114,7 @@ def main(category_path):
 
 if __name__ == '__main__':
 
-	category_path = u"17_笔记备忘"
+	category_path = u"17"
 	main(category_path)
 
 

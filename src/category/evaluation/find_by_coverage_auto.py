@@ -53,7 +53,7 @@ def calculateCoverage(category_stat_dict,synonyms_set_list):
 		app_brief = json_obj["soft_brief"]
 		app_download = int(json_obj["download_times"])
 
-		if app_download <= 10:
+		if app_download < 100:
 			continue
 
 		all_app_counter += 1
@@ -74,7 +74,7 @@ def calculateCoverage(category_stat_dict,synonyms_set_list):
 						category_stat_dict[main_category][1].add(app_id)
 	
 	top_coverage_category_info_dict = {}
-	for iter_num in range(15):
+	for iter_num in range(20):
 		stat(top_coverage_category_info_dict,category_stat_dict,all_app_counter,synonyms_set_list)
 
 def getSynonymsSet():
@@ -84,34 +84,81 @@ def getSynonymsSet():
 		synonyms_set_list.append(set([val.decode('utf-8') for val in row.strip().split(',')]))
 	return synonyms_set_list
 
-def getRelevantCategory(category_path,synonyms_set_list):
+def getEquation():
+	equation_dict = {}
+	infile = open('../data/equation.txt','rb')
+	for row in infile:
+		main_category = row.strip().split('==')[0].decode('utf-8')
+		if main_category.isdigit():
+			continue
+		sub_category_set = set(row.strip().split('==')[1].decode('utf-8').split(','))
+		equation_dict.setdefault(main_category,sub_category_set)
+	return equation_dict
+
+def getFilterCategorySet():
+	filter_category_set = set([])
+	infile = open('../data/category_filter.txt','rb')
+	for row in infile:
+		filter_category_set.add(row.strip().decode('utf-8'))
+	return filter_category_set
+
+def getPairwise():
+	pairwise_dict = {}
+	infile = open('../data/pairwise.txt','rb')
+	for row in infile:
+		main_category = row.strip().split('>>')[0].decode('utf-8')
+		sub_category_set = set(row.strip().split('>>')[1].decode('utf-8').split(','))
+		pairwise_dict.setdefault(main_category,sub_category_set)
+	return pairwise_dict
+
+def getSubCategory(category_path,filter_category_set,synonyms_set_list,pairwise_dict):
 	category_stat_dict = {}
 	infile = open('../feature/baidu_baike_search/'+category_path+'.csv','rb')
 	counter = 0
 	for row in infile:
 		counter += 1
-		if counter > 300:
+		if counter > 500:
 			break
 		category = row.strip().split(',')[0].decode('utf-8')
-		category_synonyms_set = set([category])
+		relevant_category_set = set([category])
+
 		for synonyms_set in synonyms_set_list:
 			if category in synonyms_set:
-				category_synonyms_set = synonyms_set
-		if category not in category_stat_dict.keys():
-			category_stat_dict.setdefault(category,[category_synonyms_set,set()])
+				relevant_category_set = relevant_category_set | synonyms_set
+		for relevant_category in relevant_category_set:
+			if relevant_category in pairwise_dict.keys():
+				relevant_category_set = relevant_category_set | pairwise_dict[relevant_category]
+		if category not in category_stat_dict.keys() and category not in filter_category_set:
+			category_stat_dict.setdefault(category,[relevant_category_set,set()])
+	return category_stat_dict
+
+def combine(equation_dict,category_stat_dict):
+	for category in category_stat_dict.keys():
+		relevant_category_set = category_stat_dict[category][0]
+		for exampler_category in equation_dict.keys():
+			if len(relevant_category_set & equation_dict[exampler_category]) >= 1:
+				if exampler_category in category_stat_dict.keys():
+					category_stat_dict[exampler_category][0] = category_stat_dict[exampler_category][0] | relevant_category_set | equation_dict[exampler_category]
+				else:
+					category_stat_dict.setdefault(exampler_category,[relevant_category_set | equation_dict[exampler_category],set()])
 	return category_stat_dict
 
 def main(category_path):
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
-	synonyms_set_list = getSynonymsSet()
 
-	category_stat_dict = getRelevantCategory(category_path,synonyms_set_list)
+	filter_category_set = getFilterCategorySet()
+	synonyms_set_list = getSynonymsSet()
+	equation_dict = getEquation()	
+	pairwise_dict = getPairwise()
+
+	category_stat_dict = getSubCategory(category_path,filter_category_set,synonyms_set_list,pairwise_dict)
+	category_stat_dict = combine(equation_dict,category_stat_dict)
 	calculateCoverage(category_stat_dict,synonyms_set_list)
 
 if __name__ == '__main__':
 
-	category_path = u"17_笔记备忘"
+	category_path = u"17"
 	main(category_path)
 
 

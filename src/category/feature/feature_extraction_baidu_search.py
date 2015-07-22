@@ -56,8 +56,8 @@ def getMainCategoryRevelantWord(query_category):
 	category_relevant_set = set()
 	infile = open('../data/category_hierarchy.txt','rb')
 	for row in infile:
-		if query_category == row.strip().decode('utf-8').split('>>')[0]:
-			for relevant_word in row.strip().decode('utf-8').split('>>')[1].split(','):
+		if query_category == row.strip().decode('utf-8').split('=')[0]:
+			for relevant_word in row.strip().decode('utf-8').split('=')[1].split(','):
 				category_relevant_set.add(relevant_word)
 	return category_relevant_set
 
@@ -69,18 +69,18 @@ def main(category_path):
 	category_path_list = category_path.split('_')
 	category_id = int(category_path_list[0])
 	query_category = ""
-	if len(category_path_list) >= 2:
-		query_category = category_path_list[-1].decode('utf-8')
+
+	query_category = category_path_list[-1].decode('utf-8')
 	category_relevant_set = getMainCategoryRevelantWord(query_category)
 	main_category_list = list(category_relevant_set)
 
-	file_path_list = file_utils.getFilePathList('../../scrapy/baidu_baike_search/clean_data/')
+	file_path_list = file_utils.getFilePathList('../../scrapy/baidu_baike_search/clean_data/17/')
 	category_info_dict = readCategoryInfo(file_path_list)
 	file_utils.createDirs(['baidu_baike_search'])
 
 	extractFeature(category_id,category_path,main_category_list,category_info_dict)
 
 if __name__ == '__main__':
-	category_path = u'17_笔记备忘'
+	category_path = u'17'
 	main(category_path)
 
