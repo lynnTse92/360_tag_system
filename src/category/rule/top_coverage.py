@@ -110,14 +110,15 @@ def getSynonym():
 		synonym_dict.setdefault(delegate,synonym_set)
 	return synonym_dict
 
-def getCover():
+def getCoverPair():
 	print 'getting cover relationship'
 	cover_dict = {}
 	infile = open('rule_template/cover.rule','rb')
 	for row in infile:
 		main_category = row.strip().split('>>')[0].decode('utf-8')
-		sub_category_set = set(row.strip().split('>>')[1].decode('utf-8').split(','))
-		cover_dict.setdefault(main_category,sub_category_set)
+		cover_category_set = set(row.strip().split('>>')[1].decode('utf-8').split(','))
+		cover_dict.setdefault(main_category,set())
+		cover_dict[main_category] = cover_dict[main_category] | cover_category_set
 	return cover_dict
 
 def getCombine():
@@ -209,9 +210,12 @@ def main(category_path):
 	filter_category_set = getFilterCategorySet()
 	filter_category_set = filter_category_set | comment_category_set | location_category_set
 	synonym_dict = getSynonym()
-	cover_dict = getCover()
+	cover_dict = getCoverPair()
 	combine_dict = getCombine()	
 	category_parent_dict = createCategoryTree(synonym_dict,cover_dict,combine_dict)
+
+	# root = root = getRoot(category_parent_dict,u'流程管理')
+	# print root
 
 	category_stat_dict = getSubCategory(category_path,filter_category_set,category_parent_dict)
 	calculateCoverage(category_stat_dict)
