@@ -3,9 +3,9 @@ import sys
 sys.path.append('../../common')
 import text_process
 import json
-import pickle
 import jieba,jieba.posseg,jieba.analyse
-import copy
+
+download_times_filter = 200
 
 def rankTopCoverage(top_coverage_category_info_dict,category_stat_dict,all_app_counter):
 	category_coverage_ratio_dict = {}
@@ -23,9 +23,9 @@ def rankTopCoverage(top_coverage_category_info_dict,category_stat_dict,all_app_c
 	sorted_list = sorted(category_coverage_ratio_dict.items(),key=lambda p:p[1],reverse=True)
 
 	top_coverage_category = sorted_list[0][0]
-	# print top_coverage_category
-	print ' '.join(category_stat_dict[top_coverage_category][0])
-	print category_coverage_ratio_dict[top_coverage_category]
+	print u'代表标签: '+top_coverage_category
+	print u'标签集合: '+' '.join(category_stat_dict[top_coverage_category][0])
+	print u'当前覆盖率: '+str(category_coverage_ratio_dict[top_coverage_category])
 
 	top_coverage_category_info_dict.setdefault(top_coverage_category,category_stat_dict[top_coverage_category][1])
 	
@@ -33,7 +33,7 @@ def rankTopCoverage(top_coverage_category_info_dict,category_stat_dict,all_app_c
 		for cover_set in top_coverage_category_info_dict.values():
 			already_cover_app_set = already_cover_app_set | cover_set
 
-	print 1.0*len(already_cover_app_set)/all_app_counter
+	print u'累计覆盖率: '+str(1.0*len(already_cover_app_set)/all_app_counter)
 	return 1.0*len(already_cover_app_set)/all_app_counter
 
 def calculateCoverage(category_stat_dict):
@@ -44,6 +44,7 @@ def calculateCoverage(category_stat_dict):
 	print 'reading app json'
 	infile = open('../data/'+category_path+'.json','rb')
 	all_app_counter = 0
+	print u'下载次数过滤阈值: '+str(download_times_filter)
 	for row in infile:
 		json_obj = json.loads(row.strip())
 		app_id = int(json_obj["soft_id"])
@@ -51,7 +52,7 @@ def calculateCoverage(category_stat_dict):
 		app_brief = json_obj["soft_brief"]
 		app_download = int(json_obj["download_times"])
 
-		if app_download < 1000:
+		if app_download < download_times_filter:
 			continue
 
 		all_app_counter += 1
@@ -62,11 +63,11 @@ def calculateCoverage(category_stat_dict):
 					category_stat_dict[delegate_category][1].add(app_id)
 					break
 
-	print all_app_counter
+	print u'过滤之后的app总数: '+str(all_app_counter)
 
 	top_coverage_category_info_dict = {}
 	for iter_num in range(100):
-		print 'current iter num: '+str(iter_num)
+		print '迭代次数: '+str(iter_num)
 		coverage_ratio = rankTopCoverage(top_coverage_category_info_dict,category_stat_dict,all_app_counter)
 		if coverage_ratio >= 0.9:
 			break
@@ -142,12 +143,13 @@ def getSubCategory(category_path,filter_category_set,category_parent_dict):
 	
 	root_children_dict = getRootChildren(category_parent_dict)
 
-	for subcategory in subcategory_set:
-		root = getRoot(category_parent_dict,subcategory)
-		if root == None:
-			category_stat_dict.setdefault(subcategory,[set([subcategory]),set()])
+	for category in subcategory_set:
+		if category not in category_parent_dict.keys():
+			category_stat_dict.setdefault(category,[set([category]),set()])
 		else:
-			category_stat_dict.setdefault(root,[root_children_dict[root],set()])
+			root_set = getRootSet(category_parent_dict,set([]),category_parent_dict[category])
+			for root in root_set:
+				category_stat_dict.setdefault(root,[root_children_dict[root],set()])
 	return category_stat_dict
 
 def getRootSet(category_parent_dict,root_set,parent_set):
@@ -161,15 +163,6 @@ def getRootSet(category_parent_dict,root_set,parent_set):
 			parent_set = parent_set | category_parent_dict[parent]
 			parent_set = parent_set - set([parent])
 	return getRootSet(category_parent_dict,root_set,parent_set)
-
-def getRoot(category_parent_dict,category):
-	if category in category_parent_dict.keys():
-		if category_parent_dict[category] != category:
-			return getRoot(category_parent_dict,category_parent_dict[category])
-		else:
-			return category
-	else:
-		return None
 
 def createCategoryTree(synonym_dict,cover_dict,combine_dict):
 	category_parent_dict = {}
@@ -203,8 +196,9 @@ def getRootChildren(category_parent_dict):
 	print '-aggregate category with same root'
 	root_children_dict = {}
 	for category in category_parent_dict.keys():
-		root = getRoot(category_parent_dict,category)
-		root_children_dict.setdefault(root,set([])).add(category)
+		root_set =  getRootSet(category_parent_dict,set([]),category_parent_dict[category])
+		for root in root_set:
+			root_children_dict.setdefault(root,set([])).add(category)
 	return root_children_dict
 
 def main(category_path):
@@ -220,17 +214,8 @@ def main(category_path):
 	combine_dict = getCombine()	
 	category_parent_dict = createCategoryTree(synonym_dict,cover_dict,combine_dict)
 
-
-	category = u'记账'
-	if category in category_parent_dict.keys():
-		root_set = getRootSet(category_parent_dict,set([]),category_parent_dict[category])
-		print ' '.join(root_set)
-	else:
-		print 'None'
-		print set([])
-
-	# category_stat_dict = getSubCategory(category_path,filter_category_set,category_parent_dict)
-	# calculateCoverage(category_stat_dict)
+	category_stat_dict = getSubCategory(category_path,filter_category_set,category_parent_dict)
+	calculateCoverage(category_stat_dict)
 
 if __name__ == '__main__':
 	category_path = u"17"
