@@ -5,6 +5,7 @@ import text_process
 import json
 import pickle
 import jieba,jieba.posseg,jieba.analyse
+import copy
 
 def rankTopCoverage(top_coverage_category_info_dict,category_stat_dict,all_app_counter):
 	category_coverage_ratio_dict = {}
@@ -134,11 +135,7 @@ def getSubCategory(category_path,filter_category_set,category_parent_dict):
 	subcategory_set = set([])
 	
 	infile = open('../feature/baidu_baike_search/'+category_path+'.csv','rb')
-	counter = 0
 	for row in infile:
-		# counter += 1
-		# if counter > 500:
-		# 	break
 		category = row.strip().split(',')[0].decode('utf-8')
 		if category not in filter_category_set:
 			subcategory_set.add(category)
@@ -153,6 +150,18 @@ def getSubCategory(category_path,filter_category_set,category_parent_dict):
 			category_stat_dict.setdefault(root,[root_children_dict[root],set()])
 	return category_stat_dict
 
+def getRootSet(category_parent_dict,root_set,parent_set):
+	if len(parent_set) == 0:
+		return root_set
+	for parent in parent_set:
+		if len(category_parent_dict[parent]) == 1 and list(category_parent_dict[parent])[0] == parent:
+			root_set.add(list(parent_set)[0])
+			parent_set = parent_set - set([parent])
+		else:
+			parent_set = parent_set | category_parent_dict[parent]
+			parent_set = parent_set - set([parent])
+	return getRootSet(category_parent_dict,root_set,parent_set)
+
 def getRoot(category_parent_dict,category):
 	if category in category_parent_dict.keys():
 		if category_parent_dict[category] != category:
@@ -164,27 +173,29 @@ def getRoot(category_parent_dict,category):
 
 def createCategoryTree(synonym_dict,cover_dict,combine_dict):
 	category_parent_dict = {}
-
 	for delegate in synonym_dict.keys():
 		if delegate not in category_parent_dict.keys():
-			category_parent_dict[delegate] = delegate	
+			category_parent_dict[delegate] = set([delegate])	
 		synonym_list = list(synonym_dict[delegate])
 		for i in range(len(synonym_list)):
-			category_parent_dict[synonym_list[i]] = delegate
+			category_parent_dict.setdefault(synonym_list[i],set([]))
+			category_parent_dict[synonym_list[i]] = category_parent_dict[synonym_list[i]] | set([delegate])
 
 	for master in cover_dict.keys():
 		if master not in category_parent_dict.keys():
-			category_parent_dict[master] = master
+			category_parent_dict[master] = set([master])
 		cover_list = list(cover_dict[master])
 		for i in range(len(cover_list)):
-			category_parent_dict[cover_list[i]] = master
+			category_parent_dict.setdefault(cover_list[i],set([]))
+			category_parent_dict[cover_list[i]] = category_parent_dict[cover_list[i]] | set([master])
 
 	for master in combine_dict.keys():
 		if master not in category_parent_dict.keys():
-			category_parent_dict[master] = master
+			category_parent_dict[master] = set([master])
 		combine_list = list(combine_dict[master])
 		for i in range(len(combine_list)):
-			category_parent_dict[combine_list[i]] = master
+			category_parent_dict.setdefault(combine_list[i],set([]))
+			category_parent_dict[combine_list[i]] = category_parent_dict[combine_list[i]] | set([master])
 
 	return category_parent_dict
 
@@ -209,11 +220,17 @@ def main(category_path):
 	combine_dict = getCombine()	
 	category_parent_dict = createCategoryTree(synonym_dict,cover_dict,combine_dict)
 
-	# root = root = getRoot(category_parent_dict,u'流程管理')
-	# print root
 
-	category_stat_dict = getSubCategory(category_path,filter_category_set,category_parent_dict)
-	calculateCoverage(category_stat_dict)
+	category = u'记账'
+	if category in category_parent_dict.keys():
+		root_set = getRootSet(category_parent_dict,set([]),category_parent_dict[category])
+		print ' '.join(root_set)
+	else:
+		print 'None'
+		print set([])
+
+	# category_stat_dict = getSubCategory(category_path,filter_category_set,category_parent_dict)
+	# calculateCoverage(category_stat_dict)
 
 if __name__ == '__main__':
 	category_path = u"17"
