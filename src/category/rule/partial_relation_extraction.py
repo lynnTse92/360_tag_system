@@ -18,7 +18,7 @@ def getLocationCategorySet():
 def getCategorySet(category_path):
 	print 'getting category set'
 	category_set = set([])
-	infile = open('../../../data/all_word.txt','rb')
+	infile = open('../../../data/candidate_title_word.txt','rb')
 	for row in infile:
 		category = row.strip().decode('utf-8').split(',')[0]
 		category_set.add(category)
@@ -26,7 +26,7 @@ def getCategorySet(category_path):
 
 def readWikipediaCategoryPath(category_set,location_category_set):
 	print 'reading wikipedia category path'
-	outfile = open('../data/pair.txt','wb')
+	outfile = open('../data/partial.txt','wb')
 	infile = open('../../scrapy/wikipedia/category_path_clean.txt','rb')
 	row_counter = 0
 	pair_set = set([])
@@ -38,7 +38,7 @@ def readWikipediaCategoryPath(category_set,location_category_set):
 		cover_pairwise_list = []
 		category_path_list = row.strip().decode('utf-8').split(',')
 		for category in category_path_list:
-			if category in category_set and category not in location_category_set:
+			if category in category_set:
 				cover_pairwise_list.append(category)
 		if len(cover_pairwise_list) >= 2:
 			pair_list = list(itertools.combinations(cover_pairwise_list,2))
@@ -47,7 +47,7 @@ def readWikipediaCategoryPath(category_set,location_category_set):
 					pair_set.add(pair)
 	
 	for pair in pair_set:
-		outfile.write('>>'.join(pair)+'\r\n')
+		outfile.write('>'.join(pair)+'\r\n')
 			
 
 

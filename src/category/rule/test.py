@@ -1,6 +1,4 @@
-def main(num):
-	if num >= 1:
-		return 'haha'
-	print 'ss'
-if __name__ == '__main__':
-	print main(10)
+cover_dict = {}
+cover_dict.setdefault(1,set([])).add((2,1))
+cover_dict.setdefault(1,set([])).add((3,1))
+print cover_dict

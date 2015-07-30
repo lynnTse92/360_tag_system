@@ -8,9 +8,10 @@ import jieba,jieba.posseg,jieba.analyse
 
 def readSegFile():
 	infile = open('../../data/all_cn_seg_nwi_clean.txt','rb')
-	outfile = open('../../data/all_word.txt','wb')
+	outfile = open('../../data/candidate_title_word.txt','wb')
 	stopword_set = text_process.getStopword('../../data/stopword.txt')
 	word_set = set([])
+	word_fre_dict = {}
 	row_counter = 0
 	for row in infile:
 		row_counter += 1
@@ -23,10 +24,15 @@ def readSegFile():
 		for title in title_seg:
 			if text_process.isChinese(title) and title not in stopword_set:
 				word_set.add(title)
-		for brief in brief_seg:
-			word_set.add(brief)
-	for word in word_set:
-		outfile.write(word+'\r\n')
+				word_fre_dict.setdefault(title,0)
+				word_fre_dict[title] += 1
+		# for brief in brief_seg:
+		# 	word_set.add(brief)
+	for word in word_fre_dict.keys():
+		if word_fre_dict[word] >= 10:
+			outfile.write(word+'\r\n')
+	# for word in word_set:
+	# 	outfile.write(word+'\r\n')
 
 
 def main():
