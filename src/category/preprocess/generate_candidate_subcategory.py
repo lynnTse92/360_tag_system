@@ -63,6 +63,6 @@ def main(category_path):
 	generateCandidateCategory(category_path)
 
 if __name__ == '__main__':
-	category_path = u"102232"
+	category_path = u"102230"
 	main(category_path)
 

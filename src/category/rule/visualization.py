@@ -5,88 +5,16 @@ import text_process
 import json
 import jieba,jieba.posseg,jieba.analyse
 
-download_times_filter = 200
 
-#覆盖率排序
-def rankTopCoverage(top_coverage_category_info_dict,category_stat_dict,all_app_counter):
-	#子树的覆盖率
-	category_coverage_ratio_dict = {}
-	#已经覆盖的app
-	already_cover_app_set = set()
-	if len(top_coverage_category_info_dict.keys()) != 0:
-		for cover_set in top_coverage_category_info_dict.values():
-			already_cover_app_set = already_cover_app_set | cover_set
-	
-	for category in category_stat_dict.keys():
-		cover_app_counter = len(category_stat_dict[category][1])
-		intersect_with_already_cover_app_num = len(category_stat_dict[category][1] & already_cover_app_set)
-		coverage_ratio = 1.0*(cover_app_counter-intersect_with_already_cover_app_num)/all_app_counter
-		category_coverage_ratio_dict.setdefault(category,coverage_ratio)
-	
-	#根据每棵子树的覆盖率排序
-	sorted_list = sorted(category_coverage_ratio_dict.items(),key=lambda p:p[1],reverse=True)
+class Node:
 
-	top_coverage_category = sorted_list[0][0]
-	print u'代表标签: '+top_coverage_category
-	print u'标签集合: '+' '.join(category_stat_dict[top_coverage_category][0])
-	print u'当前覆盖率: '+str(category_coverage_ratio_dict[top_coverage_category])
+	def __init__(self,name,children):
+		self.parent = set([])
+		self.name = ""  
+		self.children = []
 
-
-	top_coverage_category_info_dict.setdefault(top_coverage_category,category_stat_dict[top_coverage_category][1])
-	if len(top_coverage_category_info_dict.keys()) != 0:
-		for cover_set in top_coverage_category_info_dict.values():
-			already_cover_app_set = already_cover_app_set | cover_set
-	print u'累计覆盖率: '+str(1.0*len(already_cover_app_set)/all_app_counter)
-
-	return 1.0*len(already_cover_app_set)/all_app_counter
-
-#计算覆盖率
-def calculateCoverage(category_parent_dict,category_stat_dict):
-	print 'loading jieba userdict'
-	jieba.load_userdict('../../../data/jieba_userdict.txt')
-	print 'loading stopword'
-	stopword_set = text_process.getStopword('../../../data/stopword.txt')
-	print 'reading app json'
-	infile = open('../data/'+category_path+'.json','rb')
-	all_app_counter = 0
-	print u'下载次数过滤阈值: '+str(download_times_filter)
-	for row in infile:
-		json_obj = json.loads(row.strip())
-		app_id = int(json_obj["soft_id"])
-		app_name = json_obj["soft_name"]
-		app_brief = json_obj["soft_brief"]
-		app_download = int(json_obj["download_times"])
-
-		if app_download < download_times_filter:
-			continue
-
-		all_app_counter += 1
-
-		for delegate_category in category_stat_dict.keys():
-			for relevant_category in category_stat_dict[delegate_category][0]:
-				if relevant_category in app_name or relevant_category in app_brief:
-					if relevant_category != delegate_category:
-						#如果是强联通的，根节点不需要出现
-						if isStrongConnect(1,delegate_category,relevant_category,category_parent_dict):
-							category_stat_dict[delegate_category][1].add(app_id)
-							break
-						elif delegate_category in app_name or delegate_category in app_brief:
-							category_stat_dict[delegate_category][1].add(app_id)
-							break
-					else:
-						category_stat_dict[delegate_category][1].add(app_id)
-						break
-
-
-	print u'过滤之后的app总数: '+str(all_app_counter)
-
-	top_coverage_category_info_dict = {}
-	for iter_num in range(100):
-		print '循环次数: '+str(iter_num)
-		coverage_ratio = rankTopCoverage(top_coverage_category_info_dict,category_stat_dict,all_app_counter)
-		#达到一定累积覆盖率则停止
-		if coverage_ratio >= 0.98:
-			break
+	def addChild(self,node):
+		self.children.append(node)
 
 #获取地理位置词
 def getLocationCategorySet():
@@ -260,7 +188,30 @@ def getRootChildren(category_parent_dict):
 			root_children_dict.setdefault(root,set([])).add(category)
 	return root_children_dict
 
-def main(category_path):
+
+def getNodeChildren(category_parent_dict):
+	node_children_dict = {}
+	for category in category_parent_dict.keys():
+		for parent in category_parent_dict[category]:
+			parent_name = parent[0]	
+			node_children_dict.setdefault(parent_name,set([])).add(category)
+	return node_children_dict
+
+def getNodeChildren2(category_parent_dict):
+	node_dict = {}
+	for category in category_parent_dict.keys():
+		node_dict[category] = {'name':category,'pnames':category_parent_dict[category],'children':[]}
+	for category in node_dict.keys():
+		for parent in node_dict[category]['pnames']:
+			parent_name = parent[0]
+			relation_weight = parent[1]
+			if relation_weight != 0:
+				node_dict[parent_name]['children'].append(node_dict[category])
+	for category in node_dict.keys():
+		del node_dict[category]['pnames']
+	return node_dict
+
+def main():
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
@@ -275,19 +226,27 @@ def main(category_path):
 	partial_dict = getPartial()
 	combine_dict = getCombine()
 
-	#从规则库中构建类目关系树
 	category_parent_dict = createCategoryTree(synonym_dict,partial_dict,combine_dict)
 
-	# print isStrongConnect(1,u'外语',u'背单词',category_parent_dict)
+	#输出json
+	tree = getNodeChildren2(category_parent_dict)
+	for node_name in tree.keys():
+		if len(tree[node_name]['children']) == 0:
+			del tree[node_name]
 
-	#候选类目词的关系树
-	category_stat_dict = getCandidateCategory(category_path,filter_category_set,category_parent_dict)
-	
-	#通过计算覆盖率来添加规则
-	calculateCoverage(category_parent_dict,category_stat_dict)
+	print tree
+	json_tree = {}
+	json_tree['name'] = 'root'
+	json_tree['children'] = []
+	for node_name in tree.keys():
+		json_tree['children'].append(tree[node_name])
+
+	print json_tree
+	encodedjson = json.dumps(json_tree)
+	outfile = open('category_visualization.json','wb')
+	outfile.write(encodedjson)
+
 
 if __name__ == '__main__':
-	category_path = u"102230"
-	main(category_path)
-
+	main()
 
