@@ -62,6 +62,9 @@ def calculateCoverage(category_parent_dict,category_stat_dict):
 
 		all_app_counter += 1
 
+		# if u'设备' in app_brief:
+		# 	print app_brief
+
 		for delegate_category in category_stat_dict.keys():
 			for relevant_category in category_stat_dict[delegate_category][0]:
 				if relevant_category in app_name or relevant_category in app_brief:
@@ -239,8 +242,9 @@ def getRootSet(category_parent_dict,root_set,parent_set):
 	for parent in parent_set:
 		parent_name = parent[0]
 		relation_weight = parent[1]
-		#如果它的父节点只有它自己的话，则认为它是根节点,添加到最终要输出的root_set中
-		if len(category_parent_dict[parent_name]) == 1 and list(category_parent_dict[parent_name])[0][0] == parent_name:
+		#与其他节点只有0的关系，则认为它是根节点,添加到最终要输出的root_set中
+		relation_sum = sum([val[1] for val in category_parent_dict[parent_name]])
+		if relation_sum == 0:
 			root_set.add(parent_name)
 		#如果它不是根节点，则把它所有的父节点加入到待处理的parent_set中，直到parent_set为空才结束
 		else:
@@ -287,7 +291,7 @@ def main(category_path):
 	calculateCoverage(category_parent_dict,category_stat_dict)
 
 if __name__ == '__main__':
-	category_path = u"102230"
+	category_path = u"102231"
 	main(category_path)
 
 
