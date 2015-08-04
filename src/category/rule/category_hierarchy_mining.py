@@ -291,7 +291,7 @@ def main(category_path):
 	calculateCoverage(category_parent_dict,category_stat_dict)
 
 if __name__ == '__main__':
-	category_path = u"102231"
+	category_path = u"102139"
 	main(category_path)
 
 
