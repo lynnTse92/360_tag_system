@@ -25,7 +25,7 @@ def main():
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
-	query = u"金融"
+	query = u"旅游"
 	readWikipediaCategoryPath(query)
 
 

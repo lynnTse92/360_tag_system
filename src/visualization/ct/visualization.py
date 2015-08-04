@@ -93,7 +93,8 @@ def getNodeChildren(category_parent_dict):
 				node_dict[parent_name]['children'].append(node_dict[category])
 	for category in node_dict.keys():
 		relation_sum = sum([val[1] for val in node_dict[category]['pnames']])
-		if relation_sum == 0:
+		relation_entitys = [val[0] for val in node_dict[category]['pnames']]
+		if relation_sum == 0 and len(set(relation_entitys)-set([category])) == 0:
 			node_dict[category].setdefault('is_root',1)
 		else:
 			node_dict[category].setdefault('is_root',0)

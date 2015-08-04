@@ -88,7 +88,7 @@ def calculateCoverage(category_parent_dict,category_stat_dict):
 		print '循环次数: '+str(iter_num)
 		coverage_ratio = rankTopCoverage(top_coverage_category_info_dict,category_stat_dict,all_app_counter)
 		#达到一定累积覆盖率则停止
-		if coverage_ratio >= 0.98:
+		if coverage_ratio >= 0.99:
 			break
 
 #获取地理位置词
@@ -209,7 +209,7 @@ def isStrongConnect(is_strong,target_parent,query_child,category_parent_dict):
 				return isStrongConnect(is_strong*relation,target_parent,parent_name,category_parent_dict)
 	
 
-#同义词0，弱偏序1，强偏序2，合并3
+#虚节点-1,同义词0，弱偏序1，强偏序2，合并3
 #维护与父节点的关系
 def createCategoryTree(synonym_dict,partial_dict,combine_dict):
 	category_parent_dict = {}
@@ -221,7 +221,10 @@ def createCategoryTree(synonym_dict,partial_dict,combine_dict):
 
 	for master in partial_dict.keys():
 		if master not in category_parent_dict.keys():
-			category_parent_dict.setdefault(master,set([])).add((master,0))
+			if u'(' in master and u')' in master:
+				category_parent_dict.setdefault(master,set([])).add((master,-1))
+			else:
+				category_parent_dict.setdefault(master,set([])).add((master,0))
 		for cover_tuple in partial_dict[master]:
 			slaver = cover_tuple[0]
 			relation_weight = cover_tuple[1]
@@ -291,7 +294,7 @@ def main(category_path):
 	calculateCoverage(category_parent_dict,category_stat_dict)
 
 if __name__ == '__main__':
-	category_path = u"102139"
+	category_path = u"102231"
 	main(category_path)
 
 
