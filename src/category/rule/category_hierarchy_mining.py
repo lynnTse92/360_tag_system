@@ -217,14 +217,17 @@ def createCategoryTree(synonym_dict,partial_dict,combine_dict):
 	for delegate in synonym_dict.keys():
 		synonym_list = list(synonym_dict[delegate])
 		for synonym_word in synonym_list:
-			category_parent_dict.setdefault(synonym_word,set([])).add((delegate,0))
+			if delegate == synonym_word:
+				category_parent_dict.setdefault(delegate,set([]))
+			else:
+				category_parent_dict.setdefault(synonym_word,set([])).add((delegate,0))
 
 	for master in partial_dict.keys():
 		if master not in category_parent_dict.keys():
 			if u'(' in master and u')' in master:
 				category_parent_dict.setdefault(master,set([])).add((master,-1))
 			else:
-				category_parent_dict.setdefault(master,set([])).add((master,0))
+				category_parent_dict.setdefault(master,set([]))
 		for cover_tuple in partial_dict[master]:
 			slaver = cover_tuple[0]
 			relation_weight = cover_tuple[1]
@@ -232,7 +235,7 @@ def createCategoryTree(synonym_dict,partial_dict,combine_dict):
 
 	for master in combine_dict.keys():
 		if master not in category_parent_dict.keys():
-			category_parent_dict.setdefault(master,set([])).add((master,0))
+			category_parent_dict.setdefault(master,set([]))
 		for slaver in combine_dict[master]:
 			category_parent_dict.setdefault(slaver,set([])).add((master,3))
 
@@ -245,9 +248,8 @@ def getRootSet(category_parent_dict,root_set,parent_set):
 	for parent in parent_set:
 		parent_name = parent[0]
 		relation_weight = parent[1]
-		#与其他节点只有0的关系，则认为它是根节点,添加到最终要输出的root_set中
-		relation_sum = sum([val[1] for val in category_parent_dict[parent_name]])
-		if relation_sum == 0:
+		#父类为空，则认为它是根节点,添加到最终要输出的root_set中
+		if len(category_parent_dict[parent_name]) == 0:
 			root_set.add(parent_name)
 		#如果它不是根节点，则把它所有的父节点加入到待处理的parent_set中，直到parent_set为空才结束
 		else:

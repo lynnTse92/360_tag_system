@@ -55,7 +55,7 @@ def getCombine():
 		combine_dict.setdefault(main_category,sub_category_set)
 	return combine_dict
 
-#同义词0，弱偏序1，强偏序2，合并3
+#虚节点-1,同义词0，弱偏序1，强偏序2，合并3
 #维护与父节点的关系
 def createCategoryTree(synonym_dict,partial_dict,combine_dict):
 	category_parent_dict = {}
@@ -63,11 +63,17 @@ def createCategoryTree(synonym_dict,partial_dict,combine_dict):
 	for delegate in synonym_dict.keys():
 		synonym_list = list(synonym_dict[delegate])
 		for synonym_word in synonym_list:
-			category_parent_dict.setdefault(synonym_word,set([])).add((delegate,0))
+			if delegate == synonym_word:
+				category_parent_dict.setdefault(delegate,set([]))
+			else:
+				category_parent_dict.setdefault(synonym_word,set([])).add((delegate,0))
 
 	for master in partial_dict.keys():
 		if master not in category_parent_dict.keys():
-			category_parent_dict.setdefault(master,set([])).add((master,0))
+			if u'(' in master and u')' in master:
+				category_parent_dict.setdefault(master,set([])).add((master,-1))
+			else:
+				category_parent_dict.setdefault(master,set([]))
 		for cover_tuple in partial_dict[master]:
 			slaver = cover_tuple[0]
 			relation_weight = cover_tuple[1]
@@ -75,7 +81,7 @@ def createCategoryTree(synonym_dict,partial_dict,combine_dict):
 
 	for master in combine_dict.keys():
 		if master not in category_parent_dict.keys():
-			category_parent_dict.setdefault(master,set([])).add((master,0))
+			category_parent_dict.setdefault(master,set([]))
 		for slaver in combine_dict[master]:
 			category_parent_dict.setdefault(slaver,set([])).add((master,3))
 
@@ -85,21 +91,29 @@ def getNodeChildren(category_parent_dict):
 	node_dict = {}
 	for category in category_parent_dict.keys():
 		node_dict[category] = {'name':category,'pnames':category_parent_dict[category],'children':[]}
+
 	for category in node_dict.keys():
 		for parent in node_dict[category]['pnames']:
 			parent_name = parent[0]
 			relation_weight = parent[1]
-			if relation_weight != 0:
+			if relation_weight != 0 and relation_weight != -1:
 				node_dict[parent_name]['children'].append(node_dict[category])
+
 	for category in node_dict.keys():
-		relation_sum = sum([val[1] for val in node_dict[category]['pnames']])
-		relation_entitys = [val[0] for val in node_dict[category]['pnames']]
-		if relation_sum == 0 and len(set(relation_entitys)-set([category])) == 0:
-			node_dict[category].setdefault('is_root',1)
+		for parent in node_dict[category]['pnames']:
+			parent_name = parent[0]
+			relation_weight = parent[1]
+			if relation_weight == 0:
+				node_dict[parent_name]['children'] += node_dict[category]['children']
+
+	for category in node_dict.keys():
+		if len(node_dict[category]['pnames']) == 0:
+			node_dict[category].setdefault('is_connect_root',1)
 		else:
-			node_dict[category].setdefault('is_root',0)
+			node_dict[category].setdefault('is_connect_root',0)
 	for category in node_dict.keys():
 		del node_dict[category]['pnames']
+
 	return node_dict
 
 def main():
@@ -116,7 +130,7 @@ def main():
 	#输出json
 	tree = getNodeChildren(category_parent_dict)
 	for node_name in tree.keys():
-		if len(tree[node_name]['children']) == 0 or tree[node_name]['is_root'] != 1:
+		if len(tree[node_name]['children']) == 0 or tree[node_name]['is_connect_root'] != 1:
 			del tree[node_name]
 
 	json_tree = {}
