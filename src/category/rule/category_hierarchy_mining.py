@@ -121,34 +121,34 @@ def getFilterCategorySet():
 #获取同义词
 def getSynonym():
 	print 'getting synonym set'
-	synonym_set_list = []
 	synonym_dict = {}
+	handled_set = set([]) #存储已经处理过的词
 	infile = open('rule_template/synonym.rule','rb')
 	for row in infile:
 		#该同义词集合的代表词
 		delegate = row.strip().split('@')[0].decode('utf-8')
 		#同义词集合
-		synonym_set = set(row.strip().split('@')[1].decode('utf-8').split(','))
+		#暂时不考虑一个词可以存在多个不同语义的同义词集合
+		synonym_set = set(row.strip().split('@')[1].decode('utf-8').split(',')) - handled_set
+		handled_set = handled_set | synonym_set
 		synonym_dict.setdefault(delegate,synonym_set)
 	return synonym_dict
 
 #获取偏序关系
 def getPartial():
-	print 'getting cover relationship'
+	print 'getting partial relationship'
 	partial_dict = {}
 	infile = open('rule_template/partial.rule','rb')
 	for row in infile:
 		row = row.strip().decode('utf-8')
-		#偏序关系强弱（1是弱关系，2是强关系）
-		relation_weight = 1
-		master = ""
-		slaver = ""
-		#强偏序关系
+		if row == "":
+			continue
+		#强偏序关系2
 		if '>>' in row:
 			relation_weight = 2
 			master = row.split('>>')[0]
 			slaver = row.split('>>')[1]
-		#弱偏序关系
+		#弱偏序关系1
 		else:
 			relation_weight = 1
 			master = row.split('>')[0]
@@ -162,16 +162,18 @@ def getCombine():
 	combine_dict = {}
 	infile = open('rule_template/combine.rule','rb')
 	for row in infile:
-		main_category = row.strip().split('==')[0].decode('utf-8')
+		row = row.strip().decode('utf-8')
+		main_category = row.split('==')[0]
 		if main_category.isdigit():
 			continue
-		sub_category_set = set(row.strip().split('==')[1].decode('utf-8').split(','))
+		sub_category_set = set(row.split('==')[1].split(','))
 		combine_dict.setdefault(main_category,sub_category_set)
 	return combine_dict
 
-
 #获取类目候选词
 def getCandidateCategory(category_path,filter_category_set,category_parent_dict):
+	#该字典结构key->候选类目,value->数组
+	#数组第一个元素是以这个候选类目为根节点的子树上所有节点构成的集合，数组第二个元素类目集合覆盖的appid集合
 	category_stat_dict = {}
 	candidate_category_set = set([])
 	
@@ -184,11 +186,14 @@ def getCandidateCategory(category_path,filter_category_set,category_parent_dict)
 	root_children_dict = getRootChildren(category_parent_dict)
 
 	for category in candidate_category_set:
+		#该候选类目不在规则库中，即与其他类目没有关系，自己是一颗树
 		if category not in category_parent_dict.keys():
 			category_stat_dict.setdefault(category,[set([category]),set()])
 		else:
+			#找出该候选类目的根节点集合
 			root_set = getRootSet(category_parent_dict,set([]),category_parent_dict[category])
 			for root in root_set:
+				#不直接统计该候选类目的覆盖率，而是由该候选类目的根结点作为代表进行统计覆盖率
 				category_stat_dict.setdefault(root,[root_children_dict[root],set()])
 	return category_stat_dict
 
@@ -214,28 +219,42 @@ def isStrongConnect(is_strong,target_parent,query_child,category_parent_dict):
 def createCategoryTree(synonym_dict,partial_dict,combine_dict):
 	category_parent_dict = {}
 
+	#同义词
 	for delegate in synonym_dict.keys():
 		synonym_list = list(synonym_dict[delegate])
 		for synonym_word in synonym_list:
+			#如果该词是同义词集合代表词，父类为空
 			if delegate == synonym_word:
 				category_parent_dict.setdefault(delegate,set([]))
 			else:
 				category_parent_dict.setdefault(synonym_word,set([])).add((delegate,0))
-
+	#偏序词
 	for master in partial_dict.keys():
-		if master not in category_parent_dict.keys():
-			if u'(' in master and u')' in master:
-				category_parent_dict.setdefault(master,set([])).add((master,-1))
-			else:
-				category_parent_dict.setdefault(master,set([]))
+		category_parent_dict.setdefault(master,set([]))
+		#虚节点，用()进行标识
+		if u'(' in master and u')' in master:
+			category_parent_dict.setdefault(master,set([])).add((master,-1))
 		for cover_tuple in partial_dict[master]:
 			slaver = cover_tuple[0]
 			relation_weight = cover_tuple[1]
-			category_parent_dict.setdefault(slaver,set([])).add((master,relation_weight))
-
+			if slaver in category_parent_dict.keys():
+				#获取其同义词
+				synonym_delegate_list = [val[0] for val in category_parent_dict[slaver] if val[1] == 0]
+				if len(synonym_delegate_list) == 1:
+					#如果该词有同义词代表词，父类则cover该词的同义词代表词
+					category_parent_dict.setdefault(synonym_delegate_list[0],set([])).add((master,relation_weight))
+				elif len(synonym_delegate_list) == 0:
+					#如果该词没有同义词代表词，父类则直接cover该词
+					category_parent_dict.setdefault(slaver,set([])).add((master,relation_weight))
+				else:
+					#该词有多个同义词代表词（异常）
+					print 'multiple synonym delegates exception'
+					print slaver
+			else:
+				category_parent_dict.setdefault(slaver,set([])).add((master,relation_weight))
+	#合并词
 	for master in combine_dict.keys():
-		if master not in category_parent_dict.keys():
-			category_parent_dict.setdefault(master,set([]))
+		category_parent_dict.setdefault(master,set([]))
 		for slaver in combine_dict[master]:
 			category_parent_dict.setdefault(slaver,set([])).add((master,3))
 
@@ -287,12 +306,10 @@ def main(category_path):
 	#从规则库中构建类目关系树
 	category_parent_dict = createCategoryTree(synonym_dict,partial_dict,combine_dict)
 
-	# print isStrongConnect(1,u'外语',u'背单词',category_parent_dict)
-
 	#候选类目词的关系树
 	category_stat_dict = getCandidateCategory(category_path,filter_category_set,category_parent_dict)
 	
-	#通过计算覆盖率来添加规则
+	#通过计算覆盖率来扩充规则库
 	calculateCoverage(category_parent_dict,category_stat_dict)
 
 if __name__ == '__main__':
